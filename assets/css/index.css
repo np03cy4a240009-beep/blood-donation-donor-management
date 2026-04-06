@@ -352,30 +352,37 @@ section {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  font-size: 20px;
 }
 
 .feature-icon.red {
   background: #fde8ec;
+  color: #e0002b;
 }
 
 .feature-icon.blue {
   background: #e8f0ff;
+  color: #3b82f6;
 }
 
 .feature-icon.green {
   background: #e6f7ef;
+  color: #22c55e;
 }
 
 .feature-icon.purple {
   background: #f0e8ff;
+  color: #9333ea;
 }
 
 .feature-icon.yellow {
   background: #fef3c7;
+  color: #d97706;
 }
 
 .feature-icon.teal {
   background: #ccf0ed;
+  color: #0d9488;
 }
 
 /* WHY DONATE SECTION */
