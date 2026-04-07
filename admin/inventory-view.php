@@ -16,8 +16,10 @@ $stmt->bind_param("i", $id);
 $stmt->execute();
 $item = $stmt->get_result()->fetch_assoc();
 
+// FIX BUG : Replace die() with proper redirect
 if (!$item) {
-    die("Inventory item not found.");
+    header("Location: inventory.php?error=not_found");
+    exit();
 }
 
 $rareNote = getRareBloodGroupNote($item['blood_type']);

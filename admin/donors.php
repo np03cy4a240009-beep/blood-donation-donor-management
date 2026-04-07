@@ -51,11 +51,26 @@ if (!empty($params)) {
 $stmt->execute();
 $donors = $stmt->get_result();
 
-$totalDonors = $conn->query("SELECT COUNT(*) total FROM users WHERE role='user'")->fetch_assoc()['total'] ?? 0;
-$eligibleDonors = $conn->query("SELECT COUNT(*) total FROM users WHERE role='user' AND eligibility_status='eligible'")->fetch_assoc()['total'] ?? 0;
-$deferredDonors = $conn->query("SELECT COUNT(*) total FROM users WHERE role='user' AND eligibility_status='temporarily deferred'")->fetch_assoc()['total'] ?? 0;
-$notEligibleDonors = $conn->query("SELECT COUNT(*) total FROM users WHERE role='user' AND eligibility_status='not eligible'")->fetch_assoc()['total'] ?? 0;
-$rareDonors = $conn->query("SELECT COUNT(*) total FROM users WHERE role='user' AND blood_group IN ('A2-','A2B-','Bombay (Oh)','Rh-null')")->fetch_assoc()['total'] ?? 0;
+// FIX BUG: Convert to prepared statements for consistency
+$stmtTotal = $conn->prepare("SELECT COUNT(*) total FROM users WHERE role='user'");
+$stmtTotal->execute();
+$totalDonors = $stmtTotal->get_result()->fetch_assoc()['total'] ?? 0;
+
+$stmtEligible = $conn->prepare("SELECT COUNT(*) total FROM users WHERE role='user' AND eligibility_status='eligible'");
+$stmtEligible->execute();
+$eligibleDonors = $stmtEligible->get_result()->fetch_assoc()['total'] ?? 0;
+
+$stmtDeferred = $conn->prepare("SELECT COUNT(*) total FROM users WHERE role='user' AND eligibility_status='temporarily deferred'");
+$stmtDeferred->execute();
+$deferredDonors = $stmtDeferred->get_result()->fetch_assoc()['total'] ?? 0;
+
+$stmtNotEligible = $conn->prepare("SELECT COUNT(*) total FROM users WHERE role='user' AND eligibility_status='not eligible'");
+$stmtNotEligible->execute();
+$notEligibleDonors = $stmtNotEligible->get_result()->fetch_assoc()['total'] ?? 0;
+
+$stmtRare = $conn->prepare("SELECT COUNT(*) total FROM users WHERE role='user' AND blood_group IN ('A2-','A2B-','Bombay (Oh)','Rh-null')");
+$stmtRare->execute();
+$rareDonors = $stmtRare->get_result()->fetch_assoc()['total'] ?? 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">

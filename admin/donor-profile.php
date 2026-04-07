@@ -11,8 +11,10 @@ $stmt->bind_param("i", $id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
+// FIX BUG: Replace die() with proper redirect
 if (!$user) {
-    die("Donor not found.");
+    header("Location: donors.php?error=not_found");
+    exit();
 }
 
 $rareNote = getRareBloodGroupNote($user['blood_group'] ?? '');

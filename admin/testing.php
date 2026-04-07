@@ -49,10 +49,22 @@ if (!empty($params)) {
 $stmt->execute();
 $tests = $stmt->get_result();
 
-$tested = $conn->query("SELECT COUNT(*) total FROM tests WHERE status='Tested'")->fetch_assoc()['total'] ?? 0;
-$safe = $conn->query("SELECT COUNT(*) total FROM tests WHERE status='Safe'")->fetch_assoc()['total'] ?? 0;
-$approved = $conn->query("SELECT COUNT(*) total FROM tests WHERE status='Approved'")->fetch_assoc()['total'] ?? 0;
-$unsafe = $conn->query("SELECT COUNT(*) total FROM tests WHERE status='Unsafe'")->fetch_assoc()['total'] ?? 0;
+// FIX BUG: Convert to prepared statements for consistency
+$stmtTested = $conn->prepare("SELECT COUNT(*) total FROM tests WHERE status='Tested'");
+$stmtTested->execute();
+$tested = $stmtTested->get_result()->fetch_assoc()['total'] ?? 0;
+
+$stmtSafe = $conn->prepare("SELECT COUNT(*) total FROM tests WHERE status='Safe'");
+$stmtSafe->execute();
+$safe = $stmtSafe->get_result()->fetch_assoc()['total'] ?? 0;
+
+$stmtApproved = $conn->prepare("SELECT COUNT(*) total FROM tests WHERE status='Approved'");
+$stmtApproved->execute();
+$approved = $stmtApproved->get_result()->fetch_assoc()['total'] ?? 0;
+
+$stmtUnsafe = $conn->prepare("SELECT COUNT(*) total FROM tests WHERE status='Unsafe'");
+$stmtUnsafe->execute();
+$unsafe = $stmtUnsafe->get_result()->fetch_assoc()['total'] ?? 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
