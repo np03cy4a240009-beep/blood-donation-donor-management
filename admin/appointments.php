@@ -88,75 +88,94 @@ $cancelled = $cancelledStmt->get_result()->fetch_assoc()['total'] ?? 0;
         <div class="topbar"><div class="menu-btn">≡</div></div>
         <h1 class="page-title">Appointment</h1>
 
-        <div class="stats-row">
-            <div class="stat-card"><div><h4>Today</h4><p><?php echo (int)$totalToday; ?></p></div><span>[A]</span></div>
-            <div class="stat-card"><div><h4>Confirmed</h4><p><?php echo (int)$confirmed; ?></p></div><span>[OK]</span></div>
-            <div class="stat-card"><div><h4>Pending</h4><p><?php echo (int)$pending; ?></p></div><span>[~]</span></div>
-            <div class="stat-card"><div><h4>Cancelled</h4><p><?php echo (int)$cancelled; ?></p></div><span>[X]</span></div>
-        </div>
+        <?php if (isset($_GET['updated'])): ?>
+            <div class="notice-box notice-success" style="max-width:1000px;margin:0 auto 20px;">✓ Appointment status updated successfully. Donation recorded.</div>
+        <?php endif; ?>
 
         <div class="filter-box">
-            <h3>Filter Appointments</h3>
+            <h3>Filter</h3>
             <form method="GET" class="filter-row">
-                <input type="text" name="search" placeholder="Name / location / ID" value="<?php echo htmlspecialchars($search); ?>">
+                <input type="text" name="search" placeholder="name & ID" value="<?php echo htmlspecialchars($search); ?>">
                 <input type="date" name="date" value="<?php echo htmlspecialchars($dateFilter); ?>">
+                <select name="blood_group">
+                    <option value="">Blood group</option>
+                    <?php foreach (getBloodGroups() as $group): ?>
+                        <option value="<?php echo htmlspecialchars($group); ?>">
+                            <?php echo htmlspecialchars($group); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
                 <select name="status">
-                    <option value="">All Status</option>
+                    <option value="">Status</option>
                     <option value="pending" <?php if($statusFilter==='pending') echo 'selected'; ?>>Pending</option>
                     <option value="confirmed" <?php if($statusFilter==='confirmed') echo 'selected'; ?>>Confirmed</option>
                     <option value="cancelled" <?php if($statusFilter==='cancelled') echo 'selected'; ?>>Cancelled</option>
                 </select>
-                <button class="btn" type="submit">Filter</button>
+                <button type="submit">Apply</button>
+                <a href="appointments.php" class="btn-clear">Clear</a>
             </form>
         </div>
 
+        <h2>Total Numbers</h2>
+        <div class="stats-row">
+            <div class="stat-card"><div><h4>Today</h4><p><?php echo (int)$totalToday; ?></p></div><span>📅</span></div>
+            <div class="stat-card"><div><h4>Confirmed</h4><p><?php echo (int)$confirmed; ?></p></div><span>✓</span></div>
+            <div class="stat-card"><div><h4>Pending</h4><p><?php echo (int)$pending; ?></p></div><span>⏳</span></div>
+            <div class="stat-card"><div><h4>Cancelled</h4><p><?php echo (int)$cancelled; ?></p></div><span>⊘</span></div>
+        </div>
+
+        <h2>Appointment List</h2>
         <div class="table-box">
             <table>
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Blood Group</th>
-                        <th>Date</th>
+                        <th>Appointment ID</th>
+                        <th>location</th>
+                        <th>Blood Type</th>
                         <th>Time</th>
-                        <th>Location</th>
-                        <th>Status</th>
+                        <th>Date</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while($row = $appointments->fetch_assoc()): ?>
+                    <?php if ($appointments->num_rows > 0): ?>
+                        <?php while($row = $appointments->fetch_assoc()): ?>
                         <tr>
-                            <td><?php echo (int)$row['id']; ?></td>
-                            <td><?php echo htmlspecialchars($row['full_name']); ?></td>
-                            <td><?php echo htmlspecialchars($row['blood_group']); ?></td>
-                            <td><?php echo htmlspecialchars($row['appointment_date']); ?></td>
-                            <td><?php echo htmlspecialchars($row['appointment_time']); ?></td>
+                            <td>AID <?php echo (int)$row['id']; ?></td>
                             <td><?php echo htmlspecialchars($row['location']); ?></td>
-                            <td><?php echo htmlspecialchars($row['status']); ?></td>
                             <td>
+                                <span class="<?php echo getBloodGroupBadgeClass($row['blood_group']); ?>">
+                                    <?php echo htmlspecialchars($row['blood_group']); ?>
+                                </span>
+                            </td>
+                            <td><?php echo htmlspecialchars($row['appointment_time']); ?></td>
+                            <td><?php echo htmlspecialchars($row['appointment_date']); ?></td>
+                            <td class="table-actions">
                                 <?php if ($row['status'] === 'pending'): ?>
+                                    <div class="action-buttons">
+                                        <form method="POST" action="update-appointment-status.php" style="display:inline;">
+                                            <?php echo csrfField(); ?>
+                                            <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
+                                            <input type="hidden" name="status" value="confirmed">
+                                            <button class="btn btn-success" type="submit">Confirm</button>
+                                        </form>
 
-                                    <form method="POST" action="update-appointment-status.php" style="display:inline;">
-                                        <?php echo csrfField(); ?>
-                                        <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
-                                        <input type="hidden" name="status" value="confirmed">
-                                        <button class="btn btn-light" type="submit">Confirm</button>
-                                    </form>
-
-                                    <form method="POST" action="update-appointment-status.php" style="display:inline;">
-                                        <?php echo csrfField(); ?>
-                                        <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
-                                        <input type="hidden" name="status" value="cancelled">
-                                        <button class="btn btn-light" type="submit">Cancel</button>
-                                    </form>
-
+                                        <form method="POST" action="update-appointment-status.php" style="display:inline;">
+                                            <?php echo csrfField(); ?>
+                                            <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
+                                            <input type="hidden" name="status" value="cancelled">
+                                            <button class="btn btn-danger" type="submit">Cancel</button>
+                                        </form>
+                                    </div>
                                 <?php else: ?>
                                     <span>-</span>
                                 <?php endif; ?>
                             </td>
                         </tr>
-                    <?php endwhile; ?>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr><td colspan="6">No appointments found.</td></tr>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
