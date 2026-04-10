@@ -1,0 +1,754 @@
+/* ===============================================
+   USER REQUEST STYLESHEET
+   Clear CSS Organization for Easy Identification
+   =============================================== */
+
+/*
+   SECTION BREAKDOWN:
+
+   1. LAYOUT STRUCTURE
+      - .dashboard-layout
+      - .main-panel
+
+   2. SIDEBAR STYLING
+      - .sidebar
+      - .sidebar-brand
+      - .sidebar-menu
+      - .logout-btn
+
+   3. TOP BAR
+      - .topbar
+      - .menu-btn
+
+   4. PAGE TITLE & HEADINGS
+      - .page-title
+      - h1/h2
+
+   5. SEND REQUEST FORM PANEL
+      - .slot-panel
+      - Form grid layout
+      - Request info display
+
+   6. FORM ELEMENTS
+      - input, select, textarea
+      - labels and styling
+
+   7. REQUEST HISTORY PANEL
+      - .slot-panel
+      - .slot-item (request cards)
+      - Request card styling
+
+   8. BADGE & STATUS STYLES
+      - Status badges
+      - Blood type badges
+
+   9. BUTTON STYLES
+      - .btn
+      - Send and Delete buttons
+
+   10. NOTICE BOXES
+       - .notice-box
+       - Success/Error/Info alerts
+
+   11. CARD STYLING
+       - .card
+       - White card boxes
+
+   12. RESPONSIVE DESIGN
+       - Media queries for mobile
+*/
+
+/* ===== 1. LAYOUT STRUCTURE ===== */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f5f5f5;
+}
+
+.main-panel {
+    flex: 1;
+    background: #f5f5f5;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* ===== 2. SIDEBAR STYLING ===== */
+.sidebar {
+    width: 215px;
+    background: linear-gradient(to bottom, #02081f, #2d324f);
+    color: #fff;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+}
+
+.sidebar-top {
+    width: 100%;
+}
+
+.sidebar-brand {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 20px 14px;
+    background: #02081f;
+    border-bottom: 1px solid #3a3f5a;
+}
+
+.sidebar-brand img {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #fff;
+    padding: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-brand h2 {
+    font-size: 18px;
+    line-height: 1.2;
+    margin: 0;
+    font-weight: 700;
+}
+
+.sidebar-menu {
+    margin-top: 25px;
+    padding: 0 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-menu a {
+    display: block;
+    padding: 14px 16px;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.sidebar-menu a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    padding-left: 20px;
+}
+
+.sidebar-menu a.active {
+    background: #c0265d;
+    color: #fff;
+}
+
+.logout-btn {
+    background: #1a1f2e;
+    color: white;
+    border: 1px solid #3a3f5a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    margin: 20px 14px;
+}
+
+.logout-btn:hover {
+    background: #c0265d;
+    border-color: #c0265d;
+}
+
+/* ===== 3. TOP BAR ===== */
+.topbar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    background: transparent;
+    margin-bottom: 20px;
+}
+
+.menu-btn {
+    display: none;
+    font-size: 24px;
+    color: #333;
+    cursor: pointer;
+    background: #f0f0f0;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+/* ===== 4. PAGE TITLE & HEADINGS ===== */
+.page-title {
+    font-size: 48px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 24px 0;
+    line-height: 1.2;
+}
+
+h1 {
+    font-size: 48px;
+    font-weight: 700;
+    color: #333;
+}
+
+h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    margin: 30px 0 16px 0;
+    line-height: 1.3;
+}
+
+h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    margin: 0;
+}
+
+/* ===== 5. SEND REQUEST FORM PANEL ===== */
+.slot-panel {
+    background: linear-gradient(135deg, #1a1f2e 0%, #2d324f 100%);
+    border-radius: 14px;
+    padding: 28px 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    margin-bottom: 28px;
+}
+
+.slot-panel > form > div[style*="display:grid"] {
+    display: grid !important;
+    grid-template-columns: 1.2fr 1fr 1fr !important;
+    gap: 20px !important;
+    align-items: start !important;
+}
+
+.slot-panel p {
+    margin: 12px 0;
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.slot-panel p:first-child {
+    margin-top: 0;
+}
+
+.slot-panel strong {
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.slot-panel p strong {
+    color: #fff;
+}
+
+/* ===== 6. FORM ELEMENTS ===== */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    background: #fff;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #c0265d;
+    box-shadow: 0 0 0 3px rgba(192, 38, 93, 0.1);
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="number"]::placeholder {
+    color: #999;
+}
+
+/* ===== 7. REQUEST HISTORY PANEL ===== */
+.slot-panel:last-of-type {
+    padding: 24px;
+}
+
+.slot-item {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.slot-item:last-child {
+    margin-bottom: 0;
+}
+
+.slot-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #c0265d;
+    transform: translateX(4px);
+}
+
+.slot-item > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+}
+
+.slot-item > div:first-child::before {
+    content: '👤';
+    font-size: 32px;
+    opacity: 0.8;
+    min-width: 40px;
+    text-align: center;
+}
+
+.slot-item > div:first-child > div {
+    flex: 1;
+}
+
+.slot-item strong {
+    color: #333;
+    font-weight: 700;
+    font-size: 15px;
+    display: block;
+}
+
+.slot-item small {
+    color: #666;
+    font-size: 12px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.slot-item small span {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 11px;
+}
+
+.slot-item > div:last-child {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+/* ===== 8. BADGE & STATUS STYLES ===== */
+.badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.badge-danger {
+    background: #f8d7da;
+    color: #c82333;
+    border: 1px solid #f5c6cb;
+}
+
+.badge-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.badge-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.badge-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.badge-blue {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.badge-red {
+    background: #f8d7da;
+    color: #c82333;
+}
+
+.badge-green {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-yellow {
+    background: #fff3cd;
+    color: #856404;
+}
+
+/* Status badges in request history */
+.slot-item span[class*="badge"] {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 4px;
+}
+
+/* ===== 9. BUTTON STYLES ===== */
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Send Request button */
+.slot-panel > form > button[type="submit"],
+.slot-panel button[type="submit"] {
+    background: #b13232 !important;
+    color: #fff !important;
+    width: 100% !important;
+    padding: 14px 24px !important;
+    margin-top: 20px !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+    border: none !important;
+}
+
+.slot-panel > form > button[type="submit"]:hover,
+.slot-panel button[type="submit"]:hover {
+    background: #8b2424 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(177, 50, 50, 0.3) !important;
+}
+
+/* Delete button */
+.btn-light {
+    background: #a23333 !important;
+    color: #fff !important;
+    padding: 8px 16px !important;
+    font-size: 12px !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+}
+
+.btn-light:hover {
+    background: #8b2424 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(162, 51, 51, 0.3) !important;
+}
+
+/* ===== 10. NOTICE BOXES ===== */
+.notice-box {
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin: 16px 0;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.notice-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.notice-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.notice-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.notice-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+/* ===== 11. CARD STYLING ===== */
+.card {
+    background: #fff;
+    border: 1px solid #f0d6d6;
+    border-radius: 10px;
+    padding: 16px;
+    color: #222;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.card p {
+    font-size: 13px;
+    color: #222;
+    margin: 8px 0;
+    line-height: 1.6;
+}
+
+.card strong {
+    color: #333;
+    font-weight: 700;
+}
+
+/* ===== 12. RESPONSIVE DESIGN ===== */
+@media (max-width: 1200px) {
+    .slot-panel > form > div[style*="display:grid"] {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 16px !important;
+    }
+
+    .slot-panel > form > div[style*="display:grid"] > div:last-child {
+        grid-column: 1 / -1;
+    }
+
+    h2 {
+        font-size: 22px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-layout {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        max-height: none;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+    }
+
+    .sidebar-top {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        flex: 1;
+    }
+
+    .sidebar-brand {
+        padding: 0;
+        background: none;
+        border-bottom: none;
+        margin: 0;
+    }
+
+    .sidebar-brand img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .sidebar-brand h2 {
+        font-size: 14px;
+    }
+
+    .sidebar-menu {
+        margin-top: 0;
+        padding: 0;
+        gap: 12px;
+        flex-direction: row;
+    }
+
+    .sidebar-menu a {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .menu-btn {
+        display: block;
+    }
+
+    .sidebar-menu {
+        display: none;
+    }
+
+    .sidebar.show .sidebar-menu {
+        display: flex;
+        position: absolute;
+        top: 70px;
+        left: 0;
+        right: 0;
+        background: #2d324f;
+        flex-direction: column;
+        padding: 12px;
+        z-index: 100;
+    }
+
+    .main-panel {
+        padding: 16px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        margin-bottom: 16px;
+    }
+
+    .slot-panel {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .slot-panel > form > div[style*="display:grid"] {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .slot-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .slot-item > div:first-child {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .slot-item > div:last-child {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .slot-item > div:last-child form {
+        width: 100%;
+    }
+
+    .slot-item > div:last-child button {
+        width: 100% !important;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select {
+        font-size: 16px;
+    }
+
+    h2 {
+        font-size: 20px;
+        margin-top: 20px;
+    }
+
+    .notice-box {
+        padding: 12px 16px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar-brand {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+
+    .sidebar-brand img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .sidebar-brand h2 {
+        font-size: 12px;
+    }
+
+    .sidebar-menu a {
+        padding: 8px 10px;
+        font-size: 11px;
+    }
+
+    .page-title {
+        font-size: 22px;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+
+    .slot-panel {
+        padding: 16px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select {
+        font-size: 14px;
+        padding: 8px 10px;
+    }
+
+    .slot-item {
+        padding: 12px;
+    }
+
+    .slot-item > div:first-child::before {
+        font-size: 28px;
+    }
+
+    .slot-item strong {
+        font-size: 14px;
+    }
+
+    .slot-item small {
+        font-size: 11px;
+    }
+
+    .btn-light {
+        padding: 6px 12px !important;
+        font-size: 11px !important;
+    }
+
+    .notice-box {
+        padding: 10px 14px;
+        font-size: 12px;
+    }
+}
