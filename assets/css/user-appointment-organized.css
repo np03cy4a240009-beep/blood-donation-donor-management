@@ -1,0 +1,906 @@
+/* ===============================================
+   USER APPOINTMENT STYLESHEET
+   Clear CSS Organization for Easy Identification
+   =============================================== */
+
+/*
+   SECTION BREAKDOWN:
+
+   1. LAYOUT STRUCTURE
+      - .dashboard-layout
+      - .main-panel
+      - .two-col layout
+
+   2. SIDEBAR STYLING
+      - .sidebar
+      - .sidebar-brand
+      - .sidebar-menu
+      - .logout-btn
+
+   3. TOP BAR
+      - .topbar
+      - .menu-btn
+
+   4. PAGE TITLE
+      - .page-title
+      - h1/h2
+
+   5. BOOK APPOINTMENT PANEL
+      - .slot-panel (left side)
+      - Status badge
+      - Form fields styling
+
+   6. UPCOMING APPOINTMENTS PANEL
+      - .slot-panel (right side)
+      - Appointment cards
+      - Appointment details
+
+   7. FORM ELEMENTS
+      - input date/text/select
+      - labels
+      - Disabled states
+
+   8. CARD STYLING
+      - .card
+      - Cards with padding/border/shadow
+
+   9. BADGE & STATUS STYLES
+      - Status badges
+      - Eligibility indicators
+
+   10. BUTTON STYLES
+       - .btn
+       - Book and Cancel buttons
+
+   11. NOTICE BOXES
+       - .notice-box
+       - Success/Error alerts
+
+   12. ELIGIBILITY MODAL
+       - .modal-overlay
+       - .modal-content
+       - Modal animations
+
+   13. RESPONSIVE DESIGN
+       - Media queries for mobile
+*/
+
+/* ===== 1. LAYOUT STRUCTURE ===== */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background: #f5f5f5;
+}
+
+.main-panel {
+    flex: 1;
+    background: #f5f5f5;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 20px;
+}
+
+/* ===== 2. SIDEBAR STYLING ===== */
+.sidebar {
+    width: 215px;
+    background: linear-gradient(to bottom, #02081f, #2d324f);
+    color: #fff;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+}
+
+.sidebar-top {
+    width: 100%;
+}
+
+.sidebar-brand {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 20px 14px;
+    background: #02081f;
+    border-bottom: 1px solid #3a3f5a;
+}
+
+.sidebar-brand img {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #fff;
+    padding: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-brand h2 {
+    font-size: 18px;
+    line-height: 1.2;
+    margin: 0;
+    font-weight: 700;
+}
+
+.sidebar-menu {
+    margin-top: 25px;
+    padding: 0 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-menu a {
+    display: block;
+    padding: 14px 16px;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.sidebar-menu a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    padding-left: 20px;
+}
+
+.sidebar-menu a.active {
+    background: #c0265d;
+    color: #fff;
+}
+
+.logout-btn {
+    background: #1a1f2e;
+    color: white;
+    border: 1px solid #3a3f5a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    margin: 20px 14px;
+}
+
+.logout-btn:hover {
+    background: #c0265d;
+    border-color: #c0265d;
+}
+
+/* ===== 3. TOP BAR ===== */
+.topbar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    background: transparent;
+    margin-bottom: 20px;
+}
+
+.menu-btn {
+    display: none;
+    font-size: 24px;
+    color: #333;
+    cursor: pointer;
+    background: #f0f0f0;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+/* ===== 4. PAGE TITLE ===== */
+.page-title {
+    font-size: 48px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 24px 0;
+    line-height: 1.2;
+}
+
+h1 {
+    font-size: 48px;
+    font-weight: 700;
+    color: #333;
+}
+
+h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    line-height: 1.3;
+}
+
+h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    margin: 12px 0 16px 0;
+}
+
+/* ===== 5. BOOK APPOINTMENT PANEL ===== */
+.slot-panel {
+    background: linear-gradient(135deg, #1a1f2e 0%, #2d324f 100%);
+    border-radius: 14px;
+    padding: 28px 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.slot-panel:first-child {
+    min-height: 500px;
+}
+
+.slot-panel label {
+    display: block;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    margin-top: 16px;
+    margin-bottom: 8px;
+}
+
+.slot-panel label:first-of-type {
+    margin-top: 0;
+}
+
+/* ===== 6. CARD STYLING ===== */
+.card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 18px;
+    margin: 20px 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.card strong {
+    color: #333;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.card p {
+    font-size: 14px;
+    color: #555;
+    margin: 8px 0;
+    line-height: 1.6;
+}
+
+.card p:first-child {
+    margin-top: 0;
+}
+
+/* Status badge in eligibility card */
+.card strong[style*="color:#222"] {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+}
+
+.card strong[style*="color:#222"]::before {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #dc3545;
+}
+
+/* Eligibility note text */
+.card > div[style*="margin-top:8px"] {
+    font-size: 13px !important;
+    color: #666 !important;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 8px !important;
+}
+
+/* Upcoming appointment cards*/
+.slot-panel .card {
+    background: #fff;
+    border: 1px solid #f0d6d6;
+    color: #333;
+}
+
+.slot-panel .card h3 {
+    color: #333;
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 700;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f0d6d6;
+}
+
+.slot-panel .card p {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #555;
+    font-size: 13px;
+    margin: 10px 0;
+}
+
+.slot-panel .card p::before {
+    content: '📅';
+    font-size: 16px;
+    opacity: 0.7;
+}
+
+.slot-panel .card p:nth-child(3)::before {
+    content: '🕐';
+}
+
+.slot-panel .card p:nth-child(4)::before {
+    content: '📍';
+}
+
+/* ===== 7. FORM ELEMENTS ===== */
+input[type="date"],
+input[type="text"],
+input[type="email"],
+select {
+    width: 100% !important;
+    padding: 12px 14px !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-family: inherit !important;
+    background: #fff !important;
+    color: #333 !important;
+    transition: all 0.3s ease !important;
+    margin: 12px 0 !important;
+    height: auto !important;
+}
+
+input[type="date"]:focus,
+input[type="text"]:focus,
+select:focus {
+    outline: none !important;
+    border-color: #c0265d !important;
+    box-shadow: 0 0 0 3px rgba(192, 38, 93, 0.1) !important;
+}
+
+input[type="date"]::placeholder,
+input[type="text"]::placeholder,
+select::placeholder {
+    color: #999;
+}
+
+input:disabled,
+select:disabled {
+    background: #f5f5f5 !important;
+    color: #999 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+}
+
+/* ===== 8. BADGE & STATUS STYLES ===== */
+.badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.badge-danger {
+    background: #f8d7da;
+    color: #c82333;
+    border: 1px solid #f5c6cb;
+}
+
+.badge-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.badge-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.badge-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Status badge in appointment card */
+span.badge-danger,
+span.badge-warning,
+span.badge-success,
+span.badge-info {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 4px;
+}
+
+/* Eligibility status badge */
+.card strong[style*="color:#222"]::after {
+    content: '';
+}
+
+/* ===== 9. BUTTON STYLES ===== */
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Book Appointment button */
+.slot-panel button[type="submit"] {
+    background: #b13232 !important;
+    color: #fff !important;
+    width: 100% !important;
+    padding: 14px 24px !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    margin-top: 12px !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+    border: none !important;
+}
+
+.slot-panel button[type="submit"]:hover:not(:disabled) {
+    background: #8b2424 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(177, 50, 50, 0.3) !important;
+}
+
+.slot-panel button[type="submit"]:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.slot-panel button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Cancel button */
+.slot-panel .card button[type="submit"] {
+    background: #a23333 !important;
+    color: #fff !important;
+    width: 100% !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    margin-top: 16px !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+    border: none !important;
+}
+
+.slot-panel .card button[type="submit"]:hover {
+    background: #8b2424 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(162, 51, 51, 0.3) !important;
+}
+
+.slot-panel .card button[type="submit"]:active {
+    transform: translateY(0);
+}
+
+/* ===== 10. NOTICE BOXES ===== */
+.notice-box {
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin: 16px 0;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.notice-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.notice-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.notice-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.notice-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+/* ===== 12. ELIGIBILITY MODAL ===== */
+.modal-overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-content {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    max-width: 480px;
+    width: 90%;
+    animation: slideUp 0.3s ease;
+}
+
+.eligibility-modal {
+    text-align: center;
+    padding: 0;
+    overflow: hidden;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #1a1f2e 0%, #2d324f 100%);
+    padding: 32px 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-icon {
+    font-size: 64px;
+    display: block;
+}
+
+.modal-body {
+    padding: 32px 24px;
+}
+
+.modal-body h2 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 16px 0;
+    line-height: 1.4;
+}
+
+.modal-body p {
+    font-size: 14px;
+    color: #666;
+    margin: 16px 0 0 0;
+    line-height: 1.6;
+}
+
+.modal-footer {
+    padding: 20px 24px 32px 24px;
+}
+
+.btn-close-modal {
+    display: inline-block;
+    background: #b13232;
+    color: #fff;
+    border: none;
+    padding: 14px 48px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 300px;
+}
+
+.btn-close-modal:hover {
+    background: #8b2424;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(177, 50, 50, 0.3);
+}
+
+.btn-close-modal:active {
+    transform: translateY(0);
+}
+
+/* Eligibility badge styling */
+.eligibility-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.eligibility-badge.eligible {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.eligibility-badge.ineligible {
+    background: #f8d7da;
+    color: #c82333;
+    border: 1px solid #f5c6cb;
+}
+
+/* ===== 13. RESPONSIVE DESIGN ===== */
+@media (max-width: 1100px) {
+    .two-col {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .slot-panel:first-child {
+        min-height: 450px;
+    }
+
+    .page-title {
+        font-size: 36px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-layout {
+        flex-direction: column;
+    }
+
+    .modal-content {
+        max-width: calc(100vw - 40px);
+    }
+
+    .modal-body h2 {
+        font-size: 24px;
+    }
+
+    .modal-body p {
+        font-size: 13px;
+    }
+
+    .btn-close-modal {
+        max-width: 100%;
+        padding: 12px 32px;
+        font-size: 13px;
+    }
+
+    .sidebar {
+        width: 100%;
+        max-height: none;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+    }
+
+    .sidebar-top {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        flex: 1;
+    }
+
+    .sidebar-brand {
+        padding: 0;
+        background: none;
+        border-bottom: none;
+        margin: 0;
+    }
+
+    .sidebar-brand img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .sidebar-brand h2 {
+        font-size: 14px;
+    }
+
+    .sidebar-menu {
+        margin-top: 0;
+        padding: 0;
+        gap: 12px;
+        flex-direction: row;
+    }
+
+    .sidebar-menu a {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .menu-btn {
+        display: block;
+    }
+
+    .sidebar-menu {
+        display: none;
+    }
+
+    .sidebar.show .sidebar-menu {
+        display: flex;
+        position: absolute;
+        top: 70px;
+        left: 0;
+        right: 0;
+        background: #2d324f;
+        flex-direction: column;
+        padding: 12px;
+        z-index: 100;
+    }
+
+    .main-panel {
+        padding: 16px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        margin-bottom: 16px;
+    }
+
+    .two-col {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .slot-panel {
+        padding: 20px;
+    }
+
+    .slot-panel:first-child {
+        min-height: auto;
+    }
+
+    .slot-panel h2 {
+        font-size: 20px;
+    }
+
+    .slot-panel label {
+        font-size: 13px;
+        margin-top: 12px;
+    }
+
+    input[type="date"],
+    input[type="text"],
+    select {
+        font-size: 16px !important;
+        padding: 10px 12px !important;
+    }
+
+    .card {
+        padding: 16px;
+        margin: 16px 0;
+    }
+
+    .slot-panel .card button[type="submit"] {
+        padding: 10px 20px !important;
+        font-size: 12px !important;
+    }
+
+    .notice-box {
+        padding: 12px 16px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar-brand {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+
+    .sidebar-brand img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .sidebar-brand h2 {
+        font-size: 12px;
+    }
+
+    .sidebar-menu a {
+        padding: 8px 10px;
+        font-size: 11px;
+    }
+
+    .page-title {
+        font-size: 22px;
+    }
+
+    .slot-panel h2 {
+        font-size: 18px;
+    }
+
+    .slot-panel label {
+        font-size: 12px;
+    }
+
+    input[type="date"],
+    input[type="text"],
+    select {
+        font-size: 14px !important;
+        padding: 8px 10px !important;
+    }
+
+    .card {
+        padding: 12px;
+        margin: 12px 0;
+    }
+
+    .card p {
+        font-size: 12px;
+    }
+
+    .slot-panel .card button[type="submit"] {
+        padding: 8px 16px !important;
+        font-size: 11px !important;
+        margin-top: 12px !important;
+    }
+}
