@@ -11,7 +11,6 @@ $stmt->bind_param("i", $id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
-// FIX BUG #5A: Replace die() with proper redirect
 if (!$user) {
     header("Location: donors.php?error=not_found");
     exit();

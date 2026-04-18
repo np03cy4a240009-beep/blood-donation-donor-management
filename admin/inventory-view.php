@@ -16,7 +16,6 @@ $stmt->bind_param("i", $id);
 $stmt->execute();
 $item = $stmt->get_result()->fetch_assoc();
 
-// FIX BUG #5B: Replace die() with proper redirect
 if (!$item) {
     header("Location: inventory.php?error=not_found");
     exit();

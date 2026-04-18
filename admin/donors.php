@@ -4,13 +4,11 @@ include("../config/db.php");
 include("../includes/functions.php");
 include("../includes/eligibility.php");
 
-// Read the optional filter values entered in the donor search form.
 $search = trim($_GET['search'] ?? '');
 $location = trim($_GET['location'] ?? '');
 $blood = trim($_GET['blood_group'] ?? '');
 $status = trim($_GET['status'] ?? '');
 
-// Build the donor query step by step so only active filters are applied.
 $sql = "SELECT * FROM users WHERE role='user'";
 $params = [];
 $types = '';
@@ -53,8 +51,6 @@ if (!empty($params)) {
 $stmt->execute();
 $donors = $stmt->get_result();
 
-// Load the summary totals shown in the dashboard cards.
-// FIX BUG #4A: Convert to prepared statements for consistency
 $stmtTotal = $conn->prepare("SELECT COUNT(*) total FROM users WHERE role='user'");
 $stmtTotal->execute();
 $totalDonors = $stmtTotal->get_result()->fetch_assoc()['total'] ?? 0;
@@ -141,7 +137,6 @@ $rareDonors = $stmtRare->get_result()->fetch_assoc()['total'] ?? 0;
                 <tbody>
                     <?php if ($donors->num_rows > 0): ?>
                         <?php while($row = $donors->fetch_assoc()): ?>
-                            <?php // Recheck eligibility details for safe display in the donor table. ?>
                             <?php $evaluation = evaluateDonorEligibility($row); ?>
                         <tr>
                             <td>DID <?php echo (int)$row['id']; ?></td>
