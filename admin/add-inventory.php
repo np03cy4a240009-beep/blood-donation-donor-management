@@ -4,6 +4,7 @@ include("../config/db.php");
 include("../includes/functions.php");
 
 $error = '';
+$success = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $donor_id = (int)($_POST['donor_id'] ?? 0);
@@ -56,9 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 if ($stmt->execute()) {
-                    $_SESSION['success_message'] = "Added Successfully";
-                    header("Location: add-inventory.php");
-                    exit();
+                    $success = true;
                 } else {
                     $error = "Failed to add inventory.";
                 }
@@ -67,13 +66,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$success_message = '';
-if (isset($_SESSION['success_message'])) {
-    $success_message = $_SESSION['success_message'];
-    unset($_SESSION['success_message']);
-}
-
-$donors = $conn->query("SELECT id, full_name, blood_group FROM users WHERE role='user' ORDER BY full_name ASC");
+$stmt = $conn->prepare("SELECT id, full_name, blood_group FROM users WHERE role='user' ORDER BY full_name ASC");
+$stmt->execute();
+$donors = $stmt->get_result();
 $bloodGroups = getBloodGroups();
 ?>
 <!DOCTYPE html>
@@ -83,33 +78,40 @@ $bloodGroups = getBloodGroups();
     <title>Add Inventory</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
 <div class="dashboard-layout">
     <?php include("../includes/sidebar-admin.php"); ?>
     <div class="main-panel">
-        <div class="topbar"><div class="menu-btn">≡</div></div>
         <h1 class="page-title">Add Inventory</h1>
 
         <?php if ($error): ?>
             <div class="notice-box notice-error"><?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>
 
-        <?php if ($success_message): ?>
-            <div class="toast-notification" id="successToast">
-                <div class="toast-content">
-                    <span><?php echo htmlspecialchars($success_message); ?></span>
-                    <button class="toast-close" onclick="closeToast()">&times;</button>
-                </div>
+        <?php if ($success): ?>
+            <div id="successMessage" style="position:fixed;bottom:40px;right:40px;background:white;padding:20px 30px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);display:flex;align-items:center;gap:15px;z-index:1000;font-weight:600;">
+                <span>Added Successfully</span>
+                <button onclick="closeSuccessMessage()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#666;">✕</button>
             </div>
+            <script>
+                function closeSuccessMessage() {
+                    document.getElementById('successMessage').style.display = 'none';
+                }
+                setTimeout(function() {
+                    window.location.href = 'inventory.php?added=1';
+                }, 2000);
+            </script>
         <?php endif; ?>
 
-        <div class="form-container">
-            <form method="POST" class="add-inventory-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Donor:</label>
-                        <select name="donor_id" required>
+        <div class="card" style="padding:40px;max-width:900px;margin:auto;">
+            <form method="POST">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-bottom:24px;">
+                    <!-- Left Column -->
+                    <div>
+                        <label style="display:block;font-weight:600;margin-bottom:8px;">Donor:</label>
+                        <select name="donor_id" required style="width:100%;height:42px;margin-bottom:24px;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:14px;" <?php if($success) echo 'disabled'; ?>>
                             <option value="">Select Donor</option>
                             <?php if ($donors): ?>
                                 <?php while($donor = $donors->fetch_assoc()): ?>
@@ -119,80 +121,46 @@ $bloodGroups = getBloodGroups();
                                 <?php endwhile; ?>
                             <?php endif; ?>
                         </select>
-                    </div>
 
-                    <div class="form-group">
-                        <label>Unit ID:</label>
-                        <input type="text" name="unit_id" placeholder="Unit ID" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Blood Type:</label>
-                        <select name="blood_type" required>
+                        <label style="display:block;font-weight:600;margin-bottom:8px;">Blood Type:</label>
+                        <select name="blood_type" required style="width:100%;height:42px;margin-bottom:24px;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:14px;" <?php if($success) echo 'disabled'; ?>>
                             <option value="">Select Blood Type</option>
                             <?php foreach ($bloodGroups as $type): ?>
                                 <option value="<?php echo htmlspecialchars($type); ?>"><?php echo htmlspecialchars($type); ?></option>
                             <?php endforeach; ?>
                         </select>
+
+                        <label style="display:block;font-weight:600;margin-bottom:8px;">Collection Date:</label>
+                        <input type="date" name="collection_date" required style="width:100%;height:42px;margin-bottom:24px;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:14px;" <?php if($success) echo 'disabled'; ?>>
                     </div>
 
-                    <div class="form-group">
-                        <label>Status:</label>
-                        <select name="status">
+                    <!-- Right Column -->
+                    <div>
+                        <label style="display:block;font-weight:600;margin-bottom:8px;">Unit ID:</label>
+                        <input type="text" name="unit_id" placeholder="" required style="width:100%;height:42px;margin-bottom:24px;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:14px;" <?php if($success) echo 'disabled'; ?>>
+
+                        <label style="display:block;font-weight:600;margin-bottom:8px;">Status:</label>
+                        <select name="status" style="width:100%;height:42px;margin-bottom:24px;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:14px;" <?php if($success) echo 'disabled'; ?>>
                             <option value="Available">Available</option>
-                            <option value="expired">Expired</option>
-                            <option value="unsafe">Unsafe</option>
-                            <option value="reserved">Reserved</option>
+                            <option value="expired">expired</option>
+                            <option value="unsafe">unsafe</option>
+                            <option value="reserved">reserved</option>
                         </select>
+
+                        <label style="display:block;font-weight:600;margin-bottom:8px;">Expiry Date:</label>
+                        <input type="date" name="expiry_date" required style="width:100%;height:42px;margin-bottom:24px;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:14px;" <?php if($success) echo 'disabled'; ?>>
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Collection Date:</label>
-                        <input type="date" name="collection_date" required>
-                    </div>
+                <!-- Full Width Special Note -->
+                <label style="display:block;font-weight:600;margin-bottom:8px;">Special note:</label>
+                <textarea name="special_note" placeholder="Optional note for rare groups or special handling" style="width:100%;min-height:120px;margin-bottom:24px;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:14px;font-family:inherit;" <?php if($success) echo 'disabled'; ?>></textarea>
 
-                    <div class="form-group">
-                        <label>Expiry Date:</label>
-                        <input type="date" name="expiry_date" required>
-                    </div>
-                </div>
-
-                <div class="form-group-full">
-                    <label>Special note:</label>
-                    <textarea name="special_note" placeholder="Optional note for rare groups or special handling"></textarea>
-                </div>
-
-                <button class="btn-add-inventory-submit" type="submit">Add Inventory</button>
+                <button class="btn" type="submit" style="width:100%;background:#dc3545;color:white;padding:14px;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:16px;margin-bottom:12px;" <?php if($success) echo 'disabled'; ?>>Add Inventory</button>
+                <a href="inventory.php" class="btn btn-light" style="display:block;text-align:center;padding:14px;border-radius:6px;text-decoration:none;background:#f0f0f0;color:#333;">Back</a>
             </form>
         </div>
     </div>
 </div>
-
-<script>
-function closeToast() {
-    const toast = document.getElementById('successToast');
-    if (toast) {
-        toast.classList.add('hide');
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 300);
-    }
-}
-
-// Auto-dismiss toast after 4 seconds
-window.addEventListener('load', function() {
-    const toast = document.getElementById('successToast');
-    if (toast) {
-        setTimeout(() => {
-            closeToast();
-        }, 4000);
-    }
-});
-</script>
-
 </body>
 </html>

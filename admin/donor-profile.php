@@ -12,8 +12,7 @@ $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
 if (!$user) {
-    header("Location: donors.php?error=not_found");
-    exit();
+    die("Donor not found.");
 }
 
 $rareNote = getRareBloodGroupNote($user['blood_group'] ?? '');
@@ -26,6 +25,7 @@ $evaluation = evaluateDonorEligibility($user);
     <title>Donor Profile</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
 <div class="dashboard-layout">
@@ -35,31 +35,10 @@ $evaluation = evaluateDonorEligibility($user);
         <div class="topbar"><div class="menu-btn">≡</div></div>
         <h1 class="page-title">Profile</h1>
 
-        <?php if (isset($_GET['updated'])): ?>
-            <div class="notice-box notice-success" style="max-width:1000px;margin:0 auto 20px;">✓ Donor profile updated successfully.</div>
-        <?php endif; ?>
-
-        <?php if (isset($_GET['error'])): 
-            $errors = [
-                'not_found' => '✗ Donor not found.',
-                'update_failed' => '✗ Failed to update donor profile. Please try again.',
-                'invalid_input' => '✗ Invalid input provided.'
-            ];
-            $error_msg = $errors[$_GET['error']] ?? '✗ An error occurred. Please try again.';
-        ?>
-            <div class="notice-box notice-error" style="max-width:1000px;margin:0 auto 20px;"><?php echo $error_msg; ?></div>
-        <?php endif; ?>
-
         <div class="profile-grid">
             <div class="profile-left">
                 <h2>DID: <?php echo (int)$user['id']; ?></h2>
-                <div class="profile-avatar">
-                    <?php if (!empty($user['profile_image'])): ?>
-                        <img src="../<?php echo htmlspecialchars($user['profile_image']); ?>" alt="Profile">
-                    <?php else: ?>
-                        👤
-                    <?php endif; ?>
-                </div>
+                <div style="font-size:90px;color:#980b0b;margin:15px 0;">[P]</div>
                 <h2><?php echo htmlspecialchars($user['full_name']); ?></h2>
                 <div style="display:flex;justify-content:center;gap:30px;margin:10px 0 20px;">
                     <span><?php echo htmlspecialchars($user['blood_group'] ?? 'N/A'); ?></span>

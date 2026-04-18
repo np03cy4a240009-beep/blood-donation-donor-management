@@ -8,7 +8,12 @@ $search = trim($_GET['search'] ?? '');
 $location = trim($_GET['location'] ?? '');
 $blood = trim($_GET['blood_group'] ?? '');
 $status = trim($_GET['status'] ?? '');
+$viewRare = isset($_GET['view_rare']) ? (int)$_GET['view_rare'] : 0;
 
+// If view_rare is set, filter by rare blood groups
+if ($viewRare === 1) {
+    $blood = ''; // Clear any other blood group filter
+}
 $sql = "SELECT * FROM users WHERE role='user'";
 $params = [];
 $types = '';
@@ -36,6 +41,10 @@ if ($blood !== '') {
     $types .= 's';
 }
 
+if ($viewRare === 1) {
+    $sql .= " AND blood_group IN ('A2-','A2B-','Bombay (Oh)','Rh-null')";
+}
+
 if ($status !== '') {
     $sql .= " AND eligibility_status = ?";
     $params[] = $status;
@@ -51,25 +60,35 @@ if (!empty($params)) {
 $stmt->execute();
 $donors = $stmt->get_result();
 
-$stmtTotal = $conn->prepare("SELECT COUNT(*) total FROM users WHERE role='user'");
-$stmtTotal->execute();
-$totalDonors = $stmtTotal->get_result()->fetch_assoc()['total'] ?? 0;
+// Total Donors
+$stmt1 = $conn->prepare("SELECT COUNT(*) total FROM users WHERE role='user'");
+$stmt1->execute();
+$totalDonors = $stmt1->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt1->close();
 
-$stmtEligible = $conn->prepare("SELECT COUNT(*) total FROM users WHERE role='user' AND eligibility_status='eligible'");
-$stmtEligible->execute();
-$eligibleDonors = $stmtEligible->get_result()->fetch_assoc()['total'] ?? 0;
+// Eligible Donors
+$stmt2 = $conn->prepare("SELECT COUNT(*) total FROM users WHERE role='user' AND eligibility_status='eligible'");
+$stmt2->execute();
+$eligibleDonors = $stmt2->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt2->close();
 
-$stmtDeferred = $conn->prepare("SELECT COUNT(*) total FROM users WHERE role='user' AND eligibility_status='temporarily deferred'");
-$stmtDeferred->execute();
-$deferredDonors = $stmtDeferred->get_result()->fetch_assoc()['total'] ?? 0;
+// Deferred Donors
+$stmt3 = $conn->prepare("SELECT COUNT(*) total FROM users WHERE role='user' AND eligibility_status='temporarily deferred'");
+$stmt3->execute();
+$deferredDonors = $stmt3->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt3->close();
 
-$stmtNotEligible = $conn->prepare("SELECT COUNT(*) total FROM users WHERE role='user' AND eligibility_status='not eligible'");
-$stmtNotEligible->execute();
-$notEligibleDonors = $stmtNotEligible->get_result()->fetch_assoc()['total'] ?? 0;
+// Not Eligible Donors
+$stmt4 = $conn->prepare("SELECT COUNT(*) total FROM users WHERE role='user' AND eligibility_status='not eligible'");
+$stmt4->execute();
+$notEligibleDonors = $stmt4->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt4->close();
 
-$stmtRare = $conn->prepare("SELECT COUNT(*) total FROM users WHERE role='user' AND blood_group IN ('A2-','A2B-','Bombay (Oh)','Rh-null')");
-$stmtRare->execute();
-$rareDonors = $stmtRare->get_result()->fetch_assoc()['total'] ?? 0;
+// Rare Blood Donors
+$stmt5 = $conn->prepare("SELECT COUNT(*) total FROM users WHERE role='user' AND blood_group IN ('A2-','A2B-','Bombay (Oh)','Rh-null')");
+$stmt5->execute();
+$rareDonors = $stmt5->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt5->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -78,6 +97,7 @@ $rareDonors = $stmtRare->get_result()->fetch_assoc()['total'] ?? 0;
     <title>Donors</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <script src="https://unpkg.com/phosphor-icons"></script>
 </head>
 <body>
 <div class="dashboard-layout">
@@ -110,13 +130,14 @@ $rareDonors = $stmtRare->get_result()->fetch_assoc()['total'] ?? 0;
             </form>
         </div>
 
-        <h2>Total Numbers</h2>
+        <a href="?view_rare=1" style="display:inline-block; background:#dc3545; color:white; padding:10px 20px; border-radius:6px; text-decoration:none; font-weight:700; margin-bottom:20px;">View Rare Donors</a>
+
+        <h2 style="font-weight:normal;">Total Numbers</h2>
         <div class="stats-row">
-            <div class="stat-card"><div><h4>Donors</h4><p><?php echo (int)$totalDonors; ?></p></div><span>[D]</span></div>
-            <div class="stat-card"><div><h4>Eligible</h4><p><?php echo (int)$eligibleDonors; ?></p></div><span>[OK]</span></div>
-            <div class="stat-card"><div><h4>Deferred</h4><p><?php echo (int)$deferredDonors; ?></p></div><span>[~]</span></div>
-            <div class="stat-card"><div><h4>Not Eligible</h4><p><?php echo (int)$notEligibleDonors; ?></p></div><span>[X]</span></div>
-            <div class="stat-card"><div><h4>Rare Donors</h4><p><?php echo (int)$rareDonors; ?></p></div><span>[*]</span></div>
+            <div class="stat-card"><div><h4>Donors</h4><p><?php echo (int)$totalDonors; ?></p></div><i class="ph-thin ph-users" style="color:#940404;font-size:52px;"></i></div>
+            <div class="stat-card"><div><h4>Eligible Donors</h4><p><?php echo (int)$eligibleDonors; ?></p></div><i class="ph-thin ph-user-circle-plus" style="color:#940404;font-size:52px;"></i></div>
+            <div class="stat-card"><div><h4>Donation</h4><p><?php echo (int)$deferredDonors; ?></p></div><i class="ph-thin ph-drop" style="color:#940404;font-size:52px;"></i></div>
+            <div class="stat-card"><div><h4>Not Eligible</h4><p><?php echo (int)$notEligibleDonors; ?></p></div><i class="ph-thin ph-user-circle-minus" style="color:#940404;font-size:52px;"></i></div>
         </div>
 
         <h2>Donor List</h2>

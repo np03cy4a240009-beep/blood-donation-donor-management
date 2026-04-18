@@ -17,8 +17,7 @@ $stmt->execute();
 $item = $stmt->get_result()->fetch_assoc();
 
 if (!$item) {
-    header("Location: inventory.php?error=not_found");
-    exit();
+    die("Inventory item not found.");
 }
 
 $rareNote = getRareBloodGroupNote($item['blood_type']);
@@ -30,6 +29,7 @@ $rareNote = getRareBloodGroupNote($item['blood_type']);
     <title>Inventory View</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
 <div class="dashboard-layout">

@@ -67,23 +67,22 @@ foreach (getBloodGroups() as $type) {
     <meta charset="UTF-8">
     <title>Inventory</title>
     <link rel="stylesheet" href="../assets/css/style.css">
-    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">    <script src="https://unpkg.com/@phosphor-icons/web"></script>    <script src="https://unpkg.com/phosphor-icons"></script>
 </head>
 <body>
 <div class="dashboard-layout">
     <?php include("../includes/sidebar-admin.php"); ?>
     <div class="main-panel">
-        <div class="topbar"><div class="menu-btn">≡</div></div>
+        <div class="topbar"><div class="menu-btn"><i class="ph-thin ph-list" style="color:#666;"></i></div></div>
         <h1 class="page-title">Inventory</h1>
 
         <?php if (isset($_GET['added'])): ?>
             <div class="notice-box notice-success">Inventory added successfully.</div>
         <?php endif; ?>
 
-        <div class="inventory-actions">
-            <a href="add-inventory.php" class="btn-add-inventory">Add Inventory</a>
-            <a href="deduct-inventory.php" class="btn-deduct-inventory">Deduct Inventory</a>
-        </div>
+        <?php if (isset($_GET['deducted'])): ?>
+            <div class="notice-box notice-success">Inventory deducted successfully.</div>
+        <?php endif; ?>
 
         <div class="filter-box">
             <h3>Filter</h3>
@@ -109,7 +108,12 @@ foreach (getBloodGroups() as $type) {
             </form>
         </div>
 
-        <h2>Availability Summary</h2>
+        <div style="margin-bottom:20px; display:flex; gap:10px;">
+            <a href="add-inventory.php" style="background:#28a745; color:white; padding:10px 20px; border-radius:6px; text-decoration:none; font-weight:700; display:inline-block;">Add Inventory</a>
+            <a href="../admin/deduct-inventory.php" style="background:#dc3545; color:white; padding:10px 20px; border-radius:6px; text-decoration:none; font-weight:700; display:inline-block;">Deduct Inventory</a>
+        </div>
+
+        <h2>Total Numbers</h2>
         <div class="table-box" style="margin-bottom:25px;">
             <table>
                 <thead>
