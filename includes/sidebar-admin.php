@@ -1,3 +1,4 @@
+<!-- Admin navigation sidebar used across dashboard pages. -->
 <div class="sidebar">
     <div class="sidebar-top">
         <div class="sidebar-brand">

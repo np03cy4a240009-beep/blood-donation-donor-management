@@ -4,6 +4,7 @@ include("../config/db.php");
 include("../includes/functions.php");
 include("../includes/eligibility.php");
 
+// Prepare donor filters and load the admin donor listing.
 $search = trim($_GET['search'] ?? '');
 $location = trim($_GET['location'] ?? '');
 $blood = trim($_GET['blood_group'] ?? '');

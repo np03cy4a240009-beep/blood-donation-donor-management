@@ -4,6 +4,7 @@ include("../config/db.php");
 include("../includes/functions.php");
 require_once("../includes/security.php");
 
+// Prepare the lab testing dashboard and its filterable results list.
 $search = trim($_GET['search'] ?? '');
 $date = trim($_GET['date'] ?? '');
 $status = trim($_GET['status'] ?? '');

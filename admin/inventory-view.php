@@ -3,6 +3,7 @@ include("../config/admin-session.php");
 include("../config/db.php");
 include("../includes/functions.php");
 
+// Fetch one inventory record together with its donor details.
 $id = (int)($_GET['id'] ?? 0);
 
 $stmt = $conn->prepare("

@@ -1,6 +1,7 @@
 <?php
 include("../config/db.php");
 
+// Return the donor's display name for quick lookup requests.
 $donor_id = (int)($_GET['donor_id'] ?? 0);
 
 if ($donor_id > 0) {

@@ -4,6 +4,7 @@ include("../config/db.php");
 include("../includes/functions.php");
 include("../includes/eligibility.php");
 
+// Show and filter donors who belong to monitored rare blood groups.
 $search = trim($_GET['search'] ?? '');
 $location = trim($_GET['location'] ?? '');
 $blood = trim($_GET['blood_group'] ?? '');

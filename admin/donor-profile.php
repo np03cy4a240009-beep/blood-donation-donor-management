@@ -4,6 +4,7 @@ include("../config/db.php");
 include("../includes/functions.php");
 include("../includes/eligibility.php");
 
+// Load a single donor profile and calculate the latest eligibility summary.
 $id = (int)($_GET['id'] ?? 0);
 
 $stmt = $conn->prepare("SELECT * FROM users WHERE id = ? AND role='user' LIMIT 1");

@@ -1,5 +1,6 @@
 <?php
 
+// Shared utility functions used across the blood bank application.
 function sanitize($data) {
     return htmlspecialchars(trim((string)$data), ENT_QUOTES, 'UTF-8');
 }

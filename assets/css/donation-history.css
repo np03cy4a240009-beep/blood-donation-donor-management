@@ -1,4 +1,5 @@
 /* Donation History Page Styles */
+/* Handles cards, table layout, and status badge presentation. */
 
 .donation-stats {
     display: grid;

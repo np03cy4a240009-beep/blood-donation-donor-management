@@ -3,6 +3,7 @@ include("../config/admin-session.php");
 include("../config/db.php");
 require_once("../includes/security.php");
 
+// Accept a secure status update for a blood test record.
 verifyCsrf();
 
 $id = (int)($_POST['id'] ?? 0);

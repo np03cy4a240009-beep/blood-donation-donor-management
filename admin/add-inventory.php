@@ -3,6 +3,7 @@ include("../config/admin-session.php");
 include("../config/db.php");
 include("../includes/functions.php");
 
+// Validate the form and register a new blood unit in inventory.
 $error = '';
 $success = false;
 

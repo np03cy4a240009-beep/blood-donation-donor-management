@@ -3,6 +3,7 @@ include("../config/admin-session.php");
 include("../config/db.php");
 include("../includes/functions.php");
 
+// Mark unusable blood units as expired or unsafe.
 $error = '';
 $success = false;
 

@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/functions.php';
 
+// Eligibility helpers centralize donor screening rules and reusable checks.
 function normalizeText($value) {
     return strtolower(trim((string)$value));
 }

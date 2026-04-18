@@ -3,6 +3,7 @@ include("../config/admin-session.php");
 include("../config/db.php");
 include("../includes/functions.php");
 
+// Build the inventory view with filters and stock counts.
 $search = trim($_GET['search'] ?? '');
 $date = trim($_GET['date'] ?? '');
 $blood_group = trim($_GET['blood_group'] ?? '');
