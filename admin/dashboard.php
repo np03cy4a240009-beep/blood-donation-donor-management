@@ -3,17 +3,44 @@ include("../config/admin-session.php");
 include("../config/db.php");
 include("../includes/functions.php");
 
-$totalDonors = $conn->query("SELECT COUNT(*) as total FROM users WHERE role='user'")->fetch_assoc()['total'] ?? 0;
-$availableUnits = $conn->query("SELECT COUNT(*) as total FROM blood_inventory WHERE LOWER(status)='available'")->fetch_assoc()['total'] ?? 0;
-$pendingRequests = $conn->query("SELECT COUNT(*) as total FROM blood_requests WHERE LOWER(status)='pending'")->fetch_assoc()['total'] ?? 0;
-$urgentRequests = $conn->query("SELECT COUNT(*) as total FROM blood_requests WHERE LOWER(urgency)='urgent'")->fetch_assoc()['total'] ?? 0;
-$rareUnits = $conn->query("
+// Total Donors
+$stmt = $conn->prepare("SELECT COUNT(*) as total FROM users WHERE role='user'");
+$stmt->execute();
+$totalDonors = $stmt->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt->close();
+
+// Available Units
+$stmt = $conn->prepare("SELECT COUNT(*) as total FROM blood_inventory WHERE LOWER(status)='available'");
+$stmt->execute();
+$availableUnits = $stmt->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt->close();
+
+// Pending Requests
+$stmt = $conn->prepare("SELECT COUNT(*) as total FROM blood_requests WHERE LOWER(status)='pending'");
+$stmt->execute();
+$pendingRequests = $stmt->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt->close();
+
+// Urgent Requests
+$stmt = $conn->prepare("SELECT COUNT(*) as total FROM blood_requests WHERE LOWER(urgency)='urgent'");
+$stmt->execute();
+$urgentRequests = $stmt->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt->close();
+
+// Rare Units
+$stmt = $conn->prepare("
     SELECT COUNT(*) as total 
     FROM blood_inventory 
     WHERE blood_type IN ('A2-', 'A2B-', 'Bombay (Oh)', 'Rh-null') AND LOWER(status)='available'
-")->fetch_assoc()['total'] ?? 0;
+");
+$stmt->execute();
+$rareUnits = $stmt->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt->close();
 
-$recentRequests = $conn->query("SELECT * FROM blood_requests ORDER BY id DESC LIMIT 5");
+// Recent Requests
+$stmt = $conn->prepare("SELECT * FROM blood_requests ORDER BY id DESC LIMIT 5");
+$stmt->execute();
+$recentRequests = $stmt->get_result();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,6 +49,8 @@ $recentRequests = $conn->query("SELECT * FROM blood_requests ORDER BY id DESC LI
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://unpkg.com/phosphor-icons"></script>
 </head>
 <body>
 <div class="dashboard-layout">
@@ -31,12 +60,12 @@ $recentRequests = $conn->query("SELECT * FROM blood_requests ORDER BY id DESC LI
         <div class="topbar"><div class="menu-btn">≡</div></div>
         <h1 class="page-title">Dashboard</h1>
 
+        <h2>Total Number</h2>
         <div class="stats-row">
-            <div class="stat-card"><div><h4>Donors</h4><p><?php echo (int)$totalDonors; ?></p></div><span>[D]</span></div>
-            <div class="stat-card"><div><h4>Available Units</h4><p><?php echo (int)$availableUnits; ?></p></div><span>[B]</span></div>
-            <div class="stat-card"><div><h4>Pending Requests</h4><p><?php echo (int)$pendingRequests; ?></p></div><span>[R]</span></div>
-            <div class="stat-card"><div><h4>Urgent</h4><p><?php echo (int)$urgentRequests; ?></p></div><span>[!]</span></div>
-            <div class="stat-card"><div><h4>Rare Units</h4><p><?php echo (int)$rareUnits; ?></p></div><span>[*]</span></div>
+            <div class="stat-card"><div><h4>Donors</h4><p><?php echo (int)$totalDonors; ?></p></div><i class="ph-thin ph-users" style="color:#940404;font-size:52px;"></i></div>
+            <div class="stat-card"><div><h4>Available blood units</h4><p><?php echo (int)$availableUnits; ?></p></div><i class="ph-thin ph-drop" style="color:#940404;font-size:52px;"></i></div>
+            <div class="stat-card"><div><h4>Pending requests</h4><p><?php echo (int)$pendingRequests; ?></p></div><i class="ph-thin ph-clipboard" style="color:#940404;font-size:52px;"></i></div>
+            <div class="stat-card"><div><h4>Urgent</h4><p><?php echo (int)$urgentRequests; ?></p></div><i class="ph-thin ph-warning" style="color:#940404;font-size:52px;"></i></div>
         </div>
 
         <h2>Recent Blood Requests</h2>
@@ -56,8 +85,8 @@ $recentRequests = $conn->query("SELECT * FROM blood_requests ORDER BY id DESC LI
                     <?php if ($recentRequests && $recentRequests->num_rows > 0): ?>
                         <?php while($row = $recentRequests->fetch_assoc()): ?>
                         <tr>
-                            <td><?php echo htmlspecialchars($row['request_id']); ?></td>
-                            <td><?php echo htmlspecialchars($row['hospital_name']); ?></td>
+                            <td><?php echo htmlspecialchars(preg_replace('/^RID/', 'RID ', $row['request_id'])); ?></td>
+                            <td>Bir Hospital</td>
                             <td>
                                 <span class="<?php echo getBloodGroupBadgeClass($row['blood_type']); ?>">
                                     <?php echo htmlspecialchars($row['blood_type']); ?>

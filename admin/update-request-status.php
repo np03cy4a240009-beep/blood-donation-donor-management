@@ -7,6 +7,7 @@ verifyCsrf();
 
 $id = (int)($_POST['id'] ?? 0);
 $status = trim($_POST['status'] ?? '');
+$action = trim($_POST['action'] ?? 'update');
 
 $allowed = ['pending', 'approved', 'rejected', 'completed'];
 
@@ -18,7 +19,13 @@ $stmt = $conn->prepare("UPDATE blood_requests SET status = ? WHERE id = ?");
 $stmt->bind_param("si", $status, $id);
 
 if ($stmt->execute()) {
-    header("Location: requests.php");
+    if ($status === 'approved') {
+        header("Location: requests.php?action=approved");
+    } elseif ($status === 'rejected') {
+        header("Location: requests.php?action=rejected");
+    } else {
+        header("Location: requests.php?action=updated");
+    }
     exit();
 }
 

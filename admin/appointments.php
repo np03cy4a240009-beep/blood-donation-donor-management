@@ -7,6 +7,7 @@ require_once("../includes/security.php");
 $statusFilter = trim($_GET['status'] ?? '');
 $dateFilter = trim($_GET['date'] ?? '');
 $search = trim($_GET['search'] ?? '');
+$bloodFilter = trim($_GET['blood_group'] ?? '');
 
 $sql = "
     SELECT appointments.*, users.full_name, users.blood_group
@@ -26,6 +27,12 @@ if ($statusFilter !== '') {
 if ($dateFilter !== '') {
     $sql .= " AND appointments.appointment_date = ? ";
     $params[] = $dateFilter;
+    $types .= 's';
+}
+
+if ($bloodFilter !== '') {
+    $sql .= " AND users.blood_group = ? ";
+    $params[] = $bloodFilter;
     $types .= 's';
 }
 
@@ -49,29 +56,30 @@ $appointments = $stmt->get_result();
 
 $today = date('Y-m-d');
 
-// Secure query with prepared statements to prevent SQL injection
-$todayStmt = $conn->prepare("SELECT COUNT(*) as total FROM appointments WHERE appointment_date = ?");
-$todayStmt->bind_param("s", $today);
-$todayStmt->execute();
-$totalToday = $todayStmt->get_result()->fetch_assoc()['total'] ?? 0;
+// Total Today
+$stmt1 = $conn->prepare("SELECT COUNT(*) as total FROM appointments WHERE appointment_date=?");
+$stmt1->bind_param("s", $today);
+$stmt1->execute();
+$totalToday = $stmt1->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt1->close();
 
-$confirmedStatus = 'confirmed';
-$confirmedStmt = $conn->prepare("SELECT COUNT(*) as total FROM appointments WHERE status = ?");
-$confirmedStmt->bind_param("s", $confirmedStatus);
-$confirmedStmt->execute();
-$confirmed = $confirmedStmt->get_result()->fetch_assoc()['total'] ?? 0;
+// Confirmed
+$stmt2 = $conn->prepare("SELECT COUNT(*) as total FROM appointments WHERE status='confirmed'");
+$stmt2->execute();
+$confirmed = $stmt2->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt2->close();
 
-$pendingStatus = 'pending';
-$pendingStmt = $conn->prepare("SELECT COUNT(*) as total FROM appointments WHERE status = ?");
-$pendingStmt->bind_param("s", $pendingStatus);
-$pendingStmt->execute();
-$pending = $pendingStmt->get_result()->fetch_assoc()['total'] ?? 0;
+// Pending
+$stmt3 = $conn->prepare("SELECT COUNT(*) as total FROM appointments WHERE status='pending'");
+$stmt3->execute();
+$pending = $stmt3->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt3->close();
 
-$cancelledStatus = 'cancelled';
-$cancelledStmt = $conn->prepare("SELECT COUNT(*) as total FROM appointments WHERE status = ?");
-$cancelledStmt->bind_param("s", $cancelledStatus);
-$cancelledStmt->execute();
-$cancelled = $cancelledStmt->get_result()->fetch_assoc()['total'] ?? 0;
+// Cancelled
+$stmt4 = $conn->prepare("SELECT COUNT(*) as total FROM appointments WHERE status='cancelled'");
+$stmt4->execute();
+$cancelled = $stmt4->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt4->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -80,6 +88,8 @@ $cancelled = $cancelledStmt->get_result()->fetch_assoc()['total'] ?? 0;
     <title>Appointments</title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <script src="https://unpkg.com/phosphor-icons"></script>
+</head>
 </head>
 <body>
 <div class="dashboard-layout">
@@ -88,21 +98,23 @@ $cancelled = $cancelledStmt->get_result()->fetch_assoc()['total'] ?? 0;
         <div class="topbar"><div class="menu-btn">≡</div></div>
         <h1 class="page-title">Appointment</h1>
 
-        <?php if (isset($_GET['updated'])): ?>
-            <div class="notice-box notice-success" style="max-width:1000px;margin:0 auto 20px;">✓ Appointment status updated successfully. Donation recorded.</div>
-        <?php endif; ?>
+        <h2 style="font-weight:normal;">Total Numbers</h2>
+        <div class="stats-row" style="margin-bottom:30px;">
+            <div class="stat-card"><div><h4>Today</h4><p><?php echo (int)$totalToday; ?></p></div><i class="ph-thin ph-calendar-plus" style="color:#940404;font-size:52px;"></i></div>
+            <div class="stat-card"><div><h4>Confirmed</h4><p><?php echo (int)$confirmed; ?></p></div><i class="ph-thin ph-check-circle-fill" style="color:#940404;font-size:52px;"></i></div>
+            <div class="stat-card"><div><h4>Pending</h4><p><?php echo (int)$pending; ?></p></div><i class="ph-thin ph-clipboard" style="color:#940404;font-size:52px;"></i></div>
+            <div class="stat-card"><div><h4>Cancelled</h4><p><?php echo (int)$cancelled; ?></p></div><i class="ph-thin ph-prohibit" style="color:#940404;font-size:52px;"></i></div>
+        </div>
 
         <div class="filter-box">
             <h3>Filter</h3>
             <form method="GET" class="filter-row">
                 <input type="text" name="search" placeholder="name & ID" value="<?php echo htmlspecialchars($search); ?>">
-                <input type="date" name="date" value="<?php echo htmlspecialchars($dateFilter); ?>">
+                <input type="date" name="date" placeholder="Date" value="<?php echo htmlspecialchars($dateFilter); ?>">
                 <select name="blood_group">
                     <option value="">Blood group</option>
                     <?php foreach (getBloodGroups() as $group): ?>
-                        <option value="<?php echo htmlspecialchars($group); ?>">
-                            <?php echo htmlspecialchars($group); ?>
-                        </option>
+                        <option value="<?php echo htmlspecialchars($group); ?>"><?php echo htmlspecialchars($group); ?></option>
                     <?php endforeach; ?>
                 </select>
                 <select name="status">
@@ -111,17 +123,8 @@ $cancelled = $cancelledStmt->get_result()->fetch_assoc()['total'] ?? 0;
                     <option value="confirmed" <?php if($statusFilter==='confirmed') echo 'selected'; ?>>Confirmed</option>
                     <option value="cancelled" <?php if($statusFilter==='cancelled') echo 'selected'; ?>>Cancelled</option>
                 </select>
-                <button type="submit">Apply</button>
-                <a href="appointments.php" class="btn-clear">Clear</a>
+                <button class="btn" type="submit" style="background:#666;color:white;">Clear</button>
             </form>
-        </div>
-
-        <h2>Total Numbers</h2>
-        <div class="stats-row">
-            <div class="stat-card"><div><h4>Today</h4><p><?php echo (int)$totalToday; ?></p></div><span>📅</span></div>
-            <div class="stat-card"><div><h4>Confirmed</h4><p><?php echo (int)$confirmed; ?></p></div><span>✓</span></div>
-            <div class="stat-card"><div><h4>Pending</h4><p><?php echo (int)$pending; ?></p></div><span>⏳</span></div>
-            <div class="stat-card"><div><h4>Cancelled</h4><p><?php echo (int)$cancelled; ?></p></div><span>⊘</span></div>
         </div>
 
         <h2>Appointment List</h2>
@@ -130,7 +133,7 @@ $cancelled = $cancelledStmt->get_result()->fetch_assoc()['total'] ?? 0;
                 <thead>
                     <tr>
                         <th>Appointment ID</th>
-                        <th>location</th>
+                        <th>Location</th>
                         <th>Blood Type</th>
                         <th>Time</th>
                         <th>Date</th>
@@ -138,44 +141,36 @@ $cancelled = $cancelledStmt->get_result()->fetch_assoc()['total'] ?? 0;
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if ($appointments->num_rows > 0): ?>
-                        <?php while($row = $appointments->fetch_assoc()): ?>
+                    <?php while($row = $appointments->fetch_assoc()): ?>
                         <tr>
                             <td>AID <?php echo (int)$row['id']; ?></td>
                             <td><?php echo htmlspecialchars($row['location']); ?></td>
-                            <td>
-                                <span class="<?php echo getBloodGroupBadgeClass($row['blood_group']); ?>">
-                                    <?php echo htmlspecialchars($row['blood_group']); ?>
-                                </span>
-                            </td>
+                            <td><?php echo htmlspecialchars($row['blood_group']); ?></td>
                             <td><?php echo htmlspecialchars($row['appointment_time']); ?></td>
                             <td><?php echo htmlspecialchars($row['appointment_date']); ?></td>
-                            <td class="table-actions">
+                            <td>
                                 <?php if ($row['status'] === 'pending'): ?>
-                                    <div class="action-buttons">
-                                        <form method="POST" action="update-appointment-status.php" style="display:inline;">
-                                            <?php echo csrfField(); ?>
-                                            <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
-                                            <input type="hidden" name="status" value="confirmed">
-                                            <button class="btn btn-success" type="submit">Confirm</button>
-                                        </form>
 
-                                        <form method="POST" action="update-appointment-status.php" style="display:inline;">
-                                            <?php echo csrfField(); ?>
-                                            <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
-                                            <input type="hidden" name="status" value="cancelled">
-                                            <button class="btn btn-danger" type="submit">Cancel</button>
-                                        </form>
-                                    </div>
+                                    <form method="POST" action="update-appointment-status.php" style="display:inline;">
+                                        <?php echo csrfField(); ?>
+                                        <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
+                                        <input type="hidden" name="status" value="confirmed">
+                                        <button class="btn" type="submit" style="background:#d4a574;color:white;padding:6px 16px;border:none;border-radius:4px;cursor:pointer;font-weight:600;">Confirm</button>
+                                    </form>
+
+                                    <form method="POST" action="update-appointment-status.php" style="display:inline;margin-left:8px;">
+                                        <?php echo csrfField(); ?>
+                                        <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
+                                        <input type="hidden" name="status" value="cancelled">
+                                        <button class="btn" type="submit" style="background:#dc3545;color:white;padding:6px 16px;border:none;border-radius:4px;cursor:pointer;font-weight:600;">Cancel</button>
+                                    </form>
+
                                 <?php else: ?>
                                     <span>-</span>
                                 <?php endif; ?>
                             </td>
                         </tr>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <tr><td colspan="6">No appointments found.</td></tr>
-                    <?php endif; ?>
+                    <?php endwhile; ?>
                 </tbody>
             </table>
         </div>
