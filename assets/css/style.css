@@ -1,0 +1,153 @@
+/* Import index.css variables */
+:root {
+  --red:        #e0002b;
+  --red-dark:   #b8001f;
+  --red-light:  #fff0f2;
+  --pink-bg:    #fdf4f5;
+  --blue-bg:    #f0f5ff;
+  --green-bg:   #f0faf5;
+  --text-dark:  #1a1a2e;
+  --text-mid:   #444466;
+  --text-muted: #777799;
+  --white:      #ffffff;
+  --border:     #e8e8f0;
+  --footer-bg:  #1a1a2e;
+  --card-bg:    #fff8fa;
+  --card-border: #f0d6d6;
+  --dark:       #2a2728;
+  --light-tan:  #efc49d;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background: #fff;
+    color: var(--text-dark);
+}
+
+a {
+    text-decoration: none;
+}
+
+ul {
+    list-style: none;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    transition: 0.3s;
+}
+
+.btn-primary {
+    background: var(--red);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: var(--red-dark);
+}
+
+.btn-dark {
+    background: var(--dark);
+    color: #fff;
+}
+
+.btn-light {
+    background: var(--light-tan);
+    color: #222;
+}
+
+.card {
+    background: var(--card-bg);
+    border-radius: 14px;
+    box-shadow: 0 6px 12px rgba(219, 124, 124, 0.25);
+    border: 1px solid var(--card-border);
+}
+
+.page-title {
+    font-size: 64px;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    /* Flex properties handled in dashboard.css */
+}
+
+.stat-card h4 {
+    /* Font size handled in dashboard.css */
+}
+
+.stat-card span {
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--red-dark);
+}
+
+.badge {
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.badge-red {
+    background: var(--red);
+    color: #fff;
+}
+
+.badge-yellow {
+    background: #efc49d;
+    color: #7a4c22;
+}
+
+.badge-green {
+    background: #4b8f0a;
+    color: #fff;
+}
+
+.badge-blue {
+    background: #5f6ca7;
+    color: #fff;
+}
+
+.badge-dark {
+    background: #222;
+    color: #fff;
+}
+
+.table-box {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th,
+table td {
+    padding: 18px 10px;
+    border-bottom: 1px solid #999;
+    text-align: center;
+}
