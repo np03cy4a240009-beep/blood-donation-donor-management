@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reset Password — Bloodline Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --crimson:   #c0152a;
+  --coal:      #111111;
+  --blush:     #f9ecee;
+  --blush-mid: #f5dde0;
+  --input-bg:  #fdf6f7;
+  --mist:      #888888;
+  --white:     #ffffff;
+  --radius:    16px;
+  --radius-sm: 8px;
+  --t:         0.2s ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--blush);
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:1rem;
+}
+
+.reset-card {
+  background:var(--white);
+  border-radius:var(--radius);
+  padding:2.25rem;
+  width:100%;max-width:400px;
+  box-shadow:0 8px 40px rgba(192,21,42,0.1);
+  animation:fadeA .3s ease;
+}
+
+@keyframes fadeA{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Logo Styles */
+.logo-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:1.5rem}
+.brand-name{font-size:1.2rem;font-weight:700;color:var(--coal);margin-top:0.35rem}
+.heading{font-size:0.95rem;font-weight:600;color:var(--coal);margin-bottom:1.25rem;text-align:center}
+
+/* Form Styles */
+.form-group{margin-bottom:1rem}
+.label{display:block;font-size:0.83rem;font-weight:600;color:var(--coal);margin-bottom:5px}
+.input{
+  width:100%;padding:0.65rem 0.85rem;
+  border:1.5px solid var(--blush-mid);
+  border-radius:6px;
+  font-family:inherit;font-size:0.9rem;
+  background:var(--input-bg);outline:none;transition:all var(--t);
+}
+.input:focus{border-color:var(--crimson);background:#fff;box-shadow:0 0 0 3px rgba(192,21,42,0.08)}
+.input.error{border-color:#f87171;background:#fff5f5}
+
+.pw-wrap{position:relative}
+.eye-btn{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:var(--mist);
+}
+
+/* Validation Rules */
+.pw-rules{margin-top:8px;list-style:none;display:flex;flex-direction:column;gap:4px}
+.rule{display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--mist);font-weight:500}
+.rule.ok{color:#16a34a}
+.rdot{width:14px;height:14px;border-radius:50%;border:1.5px solid #ddd;display:flex;align-items:center;justify-content:center;font-size:8px;color:transparent}
+.rule.ok .rdot{background:#16a34a;border-color:#16a34a;color:#fff}
+
+.btn-primary{
+  width:100%;padding:0.8rem;background:var(--coal);color:#fff;
+  border:none;border-radius:var(--radius-sm);font-weight:700;
+  cursor:pointer;margin-top:0.5rem;transition:background var(--t);
+}
+.btn-primary:hover{background:#222}
+.btn-secondary{
+  width:100%;padding:0.8rem;background:none;color:var(--mist);
+  border:none;font-weight:600;cursor:pointer;font-size:0.85rem;
+}
+
+.err-msg{font-size:0.75rem;color:#b91c1c;font-weight:600;display:none;margin-top:4px}
+.err-msg.show{display:block}
+
+.alert{padding:0.75rem;border-radius:6px;font-size:0.85rem;font-weight:600;margin-bottom:1rem;display:none}
+.alert.show{display:block;background:#f0fdf4;border:1.5px solid #86efac;color:#15803d}
+
+.success-state{text-align:center}
+.success-icon{font-size:3rem;margin-bottom:1rem;display:block}
+</style>
+</head>
+<body>
+
+<div class="reset-card" id="contentArea">
+  </div>
+
+<script>
+let currentStep = 'email';
+let userEmail = '';
+
+const LOGO_HTML = `
+  <div class="logo-wrap">
+    <svg width="55" height="55" viewBox="0 0 80 80" fill="none">
+      <circle cx="40" cy="40" r="37" fill="white" stroke="#c0152a" stroke-width="2.5"/>
+      <path d="M40 15 L58 52 Q58 65 40 65 Q22 65 22 52 Z" fill="#c0152a"/>
+    </svg>
+    <div style="font-size:0.55rem;font-weight:700;letter-spacing:0.13em;color:#c0152a;text-transform:uppercase;margin-top:3px">BLOODLINE HOME</div>
+    <div class="brand-name">Reset Password</div>
+  </div>`;
+
+function render() {
+  const container = document.getElementById('contentArea');
+  if (currentStep === 'email') {
+    container.innerHTML = `
+      ${LOGO_HTML}
+      <p class="heading">Enter your email to receive an OTP</p>
+      <div id="statusAlert" class="alert"></div>
+      <form id="emailForm">
+        <div class="form-group">
+          <label class="label">Email Address</label>
+          <input type="email" id="resetEmail" class="input" placeholder="name@example.com" required>
+          <div id="emailErr" class="err-msg">Please enter a valid email.</div>
+        </div>
+        <button type="submit" class="btn-primary">Send OTP</button>
+        <button type="button" class="btn-secondary" onclick="window.location.href='login.html'">Back to Login</button>
+      </form>`;
+    bindEmailEvents();
+  } else if (currentStep === 'reset') {
+    container.innerHTML = `
+      ${LOGO_HTML}
+      <p class="heading">Create a new password</p>
+      <form id="resetForm">
+        <div class="form-group">
+          <label class="label">OTP (Check your email)</label>
+          <input type="text" id="otp" class="input" maxlength="6" placeholder="000000" inputmode="numeric">
+          <div id="otpErr" class="err-msg">Invalid OTP.</div>
+        </div>
+        <div class="form-group">
+          <label class="label">New Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="newPw" class="input">
+          </div>
+          <ul class="pw-rules">
+            <li class="rule" id="r1"><div class="rdot">✓</div>8+ characters</li>
+            <li class="rule" id="r2"><div class="rdot">✓</div>One uppercase</li>
+            <li class="rule" id="r3"><div class="rdot">✓</div>One number</li>
+          </ul>
+        </div>
+        <div class="form-group">
+          <label class="label">Confirm Password</label>
+          <input type="password" id="confirmPw" class="input">
+          <div id="matchErr" class="err-msg">Passwords do not match.</div>
+        </div>
+        <button type="submit" class="btn-primary">Update Password</button>
+      </form>`;
+    bindResetEvents();
+  } else {
+    container.innerHTML = `
+      <div class="success-state">
+        <span class="success-icon">✅</span>
+        <h2 class="brand-name" style="margin-bottom:0.5rem">Success!</h2>
+        <p style="font-size:0.85rem; color:var(--mist); margin-bottom:1.5rem">Your password has been updated. You can now use your new credentials to log in.</p>
+        <button class="btn-primary" onclick="window.location.href='login.html'">Proceed to Login</button>
+      </div>`;
+  }
+}
+
+function bindEmailEvents() {
+  document.getElementById('emailForm').onsubmit = (e) => {
+    e.preventDefault();
+    const email = document.getElementById('resetEmail').value;
+    const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    
+    if (isValid) {
+      userEmail = email;
+      const alert = document.getElementById('statusAlert');
+      alert.textContent = `✓ OTP sent to ${email}`;
+      alert.classList.add('show');
+      setTimeout(() => { currentStep = 'reset'; render(); }, 1500);
+    } else {
+      document.getElementById('emailErr').classList.add('show');
+    }
+  };
+}
+
+function bindResetEvents() {
+  const npw = document.getElementById('newPw');
+  npw.oninput = () => {
+    const v = npw.value;
+    document.getElementById('r1').classList.toggle('ok', v.length >= 8);
+    document.getElementById('r2').classList.toggle('ok', /[A-Z]/.test(v));
+    document.getElementById('r3').classList.toggle('ok', /\d/.test(v));
+  };
+
+  document.getElementById('resetForm').onsubmit = (e) => {
+    e.preventDefault();
+    const otp = document.getElementById('otp').value;
+    const cpw = document.getElementById('confirmPw').value;
+    const isStrong = npw.value.length >= 8 && /[A-Z]/.test(npw.value) && /\d/.test(npw.value);
+    
+    if (otp.length === 6 && isStrong && npw.value === cpw) {
+      currentStep = 'done';
+      render();
+    } else {
+      if (npw.value !== cpw) document.getElementById('matchErr').classList.add('show');
+      if (otp.length < 6) document.getElementById('otpErr').classList.add('show');
+    }
+  };
+}
+
+render();
+</script>
+</body>
+</html>
