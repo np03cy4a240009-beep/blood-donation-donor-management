@@ -53,6 +53,12 @@ function getNepalEligibilityRules() {
             'tattoo',
             'piercing',
             'malaria',
+            'dengue',
+            'typhoid',
+            'jaundice',
+            'yellow fever',
+            'tuberculosis',
+            'heavy medication',
             'recent transfusion',
             'alcohol',
             'drug use',
@@ -93,6 +99,123 @@ function evaluateDonorEligibility(array $user) {
         return $result;
     }
 
+    // Check for permanent medical conditions (not eligible)
+    $permanentConditions = [
+        'hiv_status' => 'HIV/AIDS',
+        'hepatitis_b_status' => 'Hepatitis B',
+        'hepatitis_c_status' => 'Hepatitis C',
+        'syphilis_status' => 'Syphilis',
+        'cancer_status' => 'Cancer',
+        'heart_disease_status' => 'Serious Heart Disease',
+        'liver_disease_status' => 'Serious Liver Disease',
+        'kidney_disease_status' => 'Serious Kidney Disease',
+        'thalassemia_status' => 'Thalassemia',
+        'hemophilia_status' => 'Hemophilia'
+    ];
+
+    foreach ($permanentConditions as $field => $condition) {
+        if (isset($user[$field]) && $user[$field] == 1) {
+            $result['status'] = 'not eligible';
+            $result['reason'] = "Medical condition '{$condition}' disqualifies from blood donation.";
+            return $result;
+        }
+    }
+
+    // Check for temporary medical conditions (defer donation)
+    $temporaryConditions = [
+        'malaria_status' => ['Malaria', 180],  // 6 months
+        'dengue_status' => ['Dengue', 180],    // 6 months
+        'typhoid_status' => ['Typhoid', 180],  // 6 months
+        'jaundice_status' => ['Jaundice (Yellow Fever)', 180],  // 6 months
+        'tuberculosis_status' => ['Tuberculosis', 180]  // 6 months
+    ];
+
+    foreach ($temporaryConditions as $field => $details) {
+        if (isset($user[$field]) && $user[$field] == 1) {
+            $result['status'] = 'temporarily deferred';
+            $result['reason'] = "{$details[0]} - donor must wait approximately {$details[1]} days (6 months) before donation.";
+            $result['next_eligible_date'] = date('Y-m-d', strtotime("+{$details[1]} days"));
+            return $result;
+        }
+    }
+
+    // Check for tattoo/piercing (6-month restriction)
+    if (isset($user['tattoo_piercing_status']) && $user['tattoo_piercing_status'] == 1) {
+        $tattooDate = isset($user['tattoo_piercing_date']) && $user['tattoo_piercing_date'] !== ''
+            ? $user['tattoo_piercing_date']
+            : null;
+
+        if ($tattooDate) {
+            $tattooTimestamp = strtotime($tattooDate);
+            $sixMonthsLater = strtotime('+6 months', $tattooTimestamp);
+            
+            if (time() < $sixMonthsLater) {
+                $nextEligibleDate = date('Y-m-d', $sixMonthsLater);
+                $result['status'] = 'temporarily deferred';
+                $result['reason'] = 'Tattoo or piercing received - must wait 6 months before donation.';
+                $result['next_eligible_date'] = $nextEligibleDate;
+                return $result;
+            }
+        }
+    }
+
+    // Check for recent surgery
+    if (isset($user['recent_surgery_status']) && $user['recent_surgery_status'] == 1) {
+        $surgeryDate = isset($user['recent_surgery_date']) && $user['recent_surgery_date'] !== ''
+            ? $user['recent_surgery_date']
+            : null;
+
+        if ($surgeryDate) {
+            $surgeryTimestamp = strtotime($surgeryDate);
+            $requiredDays = 180;  // 6 months for surgery
+            $nextEligibleDate = strtotime("+{$requiredDays} days", $surgeryTimestamp);
+            
+            if (time() < $nextEligibleDate) {
+                $nextEligibleDate = date('Y-m-d', $nextEligibleDate);
+                $result['status'] = 'temporarily deferred';
+                $result['reason'] = 'Recent surgery - must wait at least 6 months before donation.';
+                $result['next_eligible_date'] = $nextEligibleDate;
+                return $result;
+            }
+        }
+    }
+
+    // Check for heavy medication usage
+    if (isset($user['heavy_medication_status']) && $user['heavy_medication_status'] == 1) {
+        $result['status'] = 'temporarily deferred';
+        $result['reason'] = 'Heavy medication usage - must discontinue medication for appropriate period before donation.';
+        return $result;
+    }
+
+    // Check for antibiotics (typically 7 days deferral)
+    if (isset($user['antibiotics_status']) && $user['antibiotics_status'] == 1) {
+        $result['status'] = 'temporarily deferred';
+        $result['reason'] = 'Currently on antibiotics - must wait at least 7 days after completion before donation.';
+        return $result;
+    }
+
+    // Check for pregnancy (permanent deferral during pregnancy)
+    if (isset($user['pregnancy_status']) && $user['pregnancy_status'] == 1) {
+        $result['status'] = 'not eligible';
+        $result['reason'] = 'Pregnant women cannot donate blood during pregnancy.';
+        return $result;
+    }
+
+    // Check for breastfeeding (temporary deferral)
+    if (isset($user['breastfeeding_status']) && $user['breastfeeding_status'] == 1) {
+        $result['status'] = 'temporarily deferred';
+        $result['reason'] = 'Breastfeeding women must wait until they stop breastfeeding before donation.';
+        return $result;
+    }
+
+    // Check for menstruation (temporary deferral)
+    if (isset($user['menstruation_status']) && $user['menstruation_status'] == 1) {
+        $result['status'] = 'temporarily deferred';
+        $result['reason'] = 'Women experiencing menstruation should wait until menstruation stops before donation.';
+        return $result;
+    }
+
+    // Check medical history keywords (as fallback)
     if (containsAnyKeyword($medicalHistory, $rules['permanent_deferral_keywords'])) {
         $result['status'] = 'not eligible';
         $result['reason'] = 'Medical history indicates permanent or long-term deferral.';

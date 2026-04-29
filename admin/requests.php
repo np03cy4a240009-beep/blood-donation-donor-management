@@ -14,12 +14,11 @@ $params = [];
 $types = '';
 
 if ($search !== '') {
-    $sql .= " AND (hospital_name LIKE ? OR request_id LIKE ? OR contact LIKE ?)";
+    $sql .= " AND (request_id LIKE ? OR contact LIKE ?)";
     $like = "%{$search}%";
     $params[] = $like;
     $params[] = $like;
-    $params[] = $like;
-    $types .= 'sss';
+    $types .= 'ss';
 }
 
 if ($location !== '') {
@@ -78,6 +77,7 @@ $stmt_urgent->close();
 <head>
     <meta charset="UTF-8">
     <title>Blood Requests</title>
+    <link rel="icon" type="image/png" href="../assets/images/logo.png">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>

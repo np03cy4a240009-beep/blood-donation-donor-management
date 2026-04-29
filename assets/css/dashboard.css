@@ -63,15 +63,18 @@
 }
 
 .logout-btn {
-    margin: 20px 14px;
-    display: block;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     background: #090909;
     color: #fff;
-    padding: 16px;
+    padding: 16px 18px;
     border-radius: 8px;
     font-weight: 700;
     text-decoration: none;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* MAIN CONTENT AREA */

@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>BloodLine Home</title>
+  <link rel="icon" type="image/png" href="assets/images/logo.png">
 
   <!-- fonts from google -->
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
@@ -30,7 +31,10 @@
   </a>
   <div class="nav-actions">
     <a href="login.php" class="btn-link">Login</a>
-    <a href="register.php" class="btn-primary">Register</a>
+    <a href="register.php" class="btn-primary">
+      <img src="assets/images/logo.png" alt="Register" class="btn-icon">
+      Register
+    </a>
   </div>
 </nav>
 
@@ -38,7 +42,7 @@
 
 <div class="hero">
   <video class="hero-video" autoplay muted loop>
-    <source src="assets/video/Blood Donar.mp4" type="video/mp4">
+    <source src="assets/Video/Blood Donar.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video>
   <div class="hero-icon-wrap">
@@ -53,8 +57,8 @@
   <p>A comprehensive blood donation and management system connecting donors with
      patients in need. Every drop counts in saving lives.</p>
   <div class="hero-btns">
-    <a href="#" class="btn-primary">Become a Donor</a>
-    <a href="#" class="btn-outline">Learn More</a>
+    <a href="register.php" class="btn-primary">Become a Donor</a>
+    <a href="about.php" class="btn-outline">Learn More</a>
   </div>
 </div>
 
@@ -239,8 +243,8 @@
   <p>Join thousands of donors who are saving lives every day. Register now and
      become a hero.</p>
   <div class="cta-btns">
-    <a href="#" class="btn-white">Register as Donor</a>
-    <a href="#" class="btn-outline-white">Login</a>
+    <a href="register.php" class="btn-white">Register as Donor</a>
+    <a href="login.php" class="btn-outline-white">Login</a>
   </div>
 </div>
 
@@ -251,7 +255,7 @@
 
     <!-- brand info -->
     <div>
-      <div class="footer-brand-name">LifeSaver Blood Bank</div>
+      <div class="footer-brand-name">BloodLine Home</div>
       <p class="footer-brand-desc">Committed to saving lives through safe and
          efficient blood donation services.</p>
     </div>

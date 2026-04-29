@@ -47,6 +47,7 @@ $recentRequests = $stmt->get_result();
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard</title>
+    <link rel="icon" type="image/png" href="../assets/images/logo.png">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -74,7 +75,6 @@ $recentRequests = $stmt->get_result();
                 <thead>
                     <tr>
                         <th>Request ID</th>
-                        <th>Hospital</th>
                         <th>Blood Type</th>
                         <th>Units</th>
                         <th>Urgency</th>
@@ -86,7 +86,6 @@ $recentRequests = $stmt->get_result();
                         <?php while($row = $recentRequests->fetch_assoc()): ?>
                         <tr>
                             <td><?php echo htmlspecialchars(preg_replace('/^RID/', 'RID ', $row['request_id'])); ?></td>
-                            <td>Bir Hospital</td>
                             <td>
                                 <span class="<?php echo getBloodGroupBadgeClass($row['blood_type']); ?>">
                                     <?php echo htmlspecialchars($row['blood_type']); ?>
@@ -106,7 +105,7 @@ $recentRequests = $stmt->get_result();
                         </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
-                        <tr><td colspan="6">No recent requests found.</td></tr>
+                        <tr><td colspan="5">No recent requests found.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>

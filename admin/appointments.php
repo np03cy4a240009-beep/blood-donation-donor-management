@@ -86,6 +86,7 @@ $stmt4->close();
 <head>
     <meta charset="UTF-8">
     <title>Appointments</title>
+    <link rel="icon" type="image/png" href="../assets/images/logo.png">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <script src="https://unpkg.com/phosphor-icons"></script>

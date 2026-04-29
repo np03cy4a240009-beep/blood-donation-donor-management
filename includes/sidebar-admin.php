@@ -10,6 +10,7 @@
             <a href="donors.php" class="<?= basename($_SERVER['PHP_SELF'])=='donors.php' ? 'active' : '' ?>">Donor</a>
             <a href="inventory.php" class="<?= basename($_SERVER['PHP_SELF'])=='inventory.php' || basename($_SERVER['PHP_SELF'])=='add-inventory.php' || basename($_SERVER['PHP_SELF'])=='inventory-view.php' ? 'active' : '' ?>">Inventory</a>
             <a href="requests.php" class="<?= basename($_SERVER['PHP_SELF'])=='requests.php' ? 'active' : '' ?>">Request</a>
+            <a href="emergency-alerts.php" class="<?= basename($_SERVER['PHP_SELF'])=='emergency-alerts.php' ? 'active' : '' ?>">🚨 Emergency Alerts</a>
             <a href="testing.php" class="<?= basename($_SERVER['PHP_SELF'])=='testing.php' ? 'active' : '' ?>">Testing</a>
             <a href="appointments.php" class="<?= basename($_SERVER['PHP_SELF'])=='appointments.php' ? 'active' : '' ?>">Appointment</a>
         </div>

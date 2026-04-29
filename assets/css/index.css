@@ -26,7 +26,7 @@
 /* BASE */
 
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   color: var(--text-dark);
   background: #fff;
   font-size: 15px;
@@ -123,12 +123,20 @@ nav {
   border-radius: 8px;
   transition: background .15s, transform .1s;
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .btn-primary:hover {
   background: var(--red-dark);
   transform: translateY(-1px);
+}
+
+.btn-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
 }
 
 .btn-outline {
@@ -232,7 +240,7 @@ nav {
 }
 
 .hero h1 {
-  font-family: 'DM Serif Display', serif;
+  font-family: 'Inter', sans-serif;
   font-size: 42px;
   color: var(--text-dark);
   margin-bottom: 18px;

@@ -127,4 +127,22 @@ function getSymbol($type) {
 
     return $symbols[$type] ?? '[*]';
 }
+
+function getCompatibleBloodTypes($bloodType) {
+    $bloodType = trim((string)$bloodType);
+    
+    // Blood type compatibility mapping
+    $compatibility = [
+        'O+' => ['O+', 'O-'],
+        'O-' => ['O-'],
+        'A+' => ['A+', 'A-', 'O+', 'O-'],
+        'A-' => ['A-', 'O-'],
+        'B+' => ['B+', 'B-', 'O+', 'O-'],
+        'B-' => ['B-', 'O-'],
+        'AB+' => ['AB+', 'AB-', 'A+', 'A-', 'B+', 'B-', 'O+', 'O-'],
+        'AB-' => ['AB-', 'A-', 'B-', 'O-'],
+    ];
+    
+    return $compatibility[$bloodType] ?? [$bloodType];
+}
 ?>
