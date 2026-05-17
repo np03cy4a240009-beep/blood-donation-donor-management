@@ -1,7 +1,9 @@
 <?php
 include("../config/user-session.php");
 include("../config/db.php");
+include("../config/env-loader.php");
 include("../includes/functions.php");
+include("../auth/send-otp-mail.php");
 require_once("../includes/security.php");
 
 $user_id = $_SESSION['user_id'];
@@ -11,8 +13,8 @@ $bloodAvailability = [];
 $nearbyBloodAvailability = [];
 
 try {
-    // Get user's location
-    $userStmt = $conn->prepare("SELECT address, city, province, blood_group FROM users WHERE id = ?");
+    // Get user's location and age
+    $userStmt = $conn->prepare("SELECT full_name, address, city, province, blood_group, age, emergency_email_1, emergency_email_2, emergency_email_3 FROM users WHERE id = ?");
     $userStmt->bind_param("i", $user_id);
     $userStmt->execute();
     $userResult = $userStmt->get_result();
@@ -96,7 +98,65 @@ if ($nearbyInventory) {
     }
 }
 
-// Handle SOS request
+// Handle Quick SOS button click - sends emergency alert immediately
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['quick_sos'])) {
+    if (!csrfCheck()) {
+        $message = "Invalid request. Please try again.";
+        $messageType = "error";
+    } else {
+        try {
+            // Get emergency contact emails
+            $contactEmails = array_filter([
+                $userData['emergency_email_1'] ?? '',
+                $userData['emergency_email_2'] ?? '',
+                $userData['emergency_email_3'] ?? ''
+            ]);
+
+            if (empty($contactEmails)) {
+                $message = "❌ No emergency contact emails registered. Please update your profile with 3 emergency contact emails first.";
+                $messageType = "error";
+            } else {
+                $alertSentCount = 0;
+                $alertFailCount = 0;
+
+                // Send emergency alert to each contact
+                foreach ($contactEmails as $contactEmail) {
+                    if (isValidEmail($contactEmail)) {
+                        if (sendEmergencyAlertMail($contactEmail, $userData['full_name'] ?? 'User')) {
+                            $alertSentCount++;
+                            error_log("✓ Emergency alert SENT to: $contactEmail");
+                        } else {
+                            $alertFailCount++;
+                            error_log("✗ Emergency alert FAILED to: $contactEmail");
+                        }
+                    } else {
+                        $alertFailCount++;
+                        error_log("✗ Invalid email: $contactEmail");
+                    }
+                }
+
+                // Show result message
+                if ($alertSentCount > 0) {
+                    $message = "✓ EMERGENCY ALERT SENT! Emergency message delivered to " . $alertSentCount . " contact(s). ";
+                    if ($alertFailCount > 0) {
+                        $message .= "(" . $alertFailCount . " failed)";
+                    }
+                    $message .= " Fill in details below to create a blood request record.";
+                    $messageType = "success";
+                } else {
+                    $message = "❌ Failed to send emergency alerts to all contacts. Please try again or contact admin.";
+                    $messageType = "error";
+                }
+            }
+        } catch (Exception $e) {
+            $message = "Error: " . htmlspecialchars($e->getMessage());
+            $messageType = "error";
+            error_log("Quick SOS error: " . $e->getMessage());
+        }
+    }
+}
+
+// Handle detailed SOS request form
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sos_request'])) {
     // Verify CSRF token
     if (!csrfCheck()) {
@@ -104,6 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sos_request'])) {
         $messageType = "error";
     } else {
         try {
+            $userAge = (int)($userData['age'] ?? 0);
             $bloodNeeded = trim($_POST['blood_needed'] ?? $userBloodGroup);
             $unitsNeeded = (int)($_POST['units_needed'] ?? 2);
             $emergencyReason = trim($_POST['emergency_reason'] ?? '');
@@ -124,20 +185,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sos_request'])) {
                 
                 $emergencyStmt = $conn->prepare("
                     INSERT INTO blood_requests 
-                    (request_id, user_id, contact, location, blood_type, units, urgency, status, request_date, required_by, notes)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    (request_id, user_id, contact, location, hospital_name, blood_type, units, urgency, status, request_date, required_by, notes)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ");
                 
                 if (!$emergencyStmt) {
                     throw new Exception("Prepare error: " . $conn->error);
                 }
                 
+                $hospitalName = 'Bir Hospital'; // Default hospital
                 $emergencyStmt->bind_param(
-                    "sisssisssss",
+                    "sissssisssss",
                     $request_id,
                     $user_id,
                     $userPhone,
                     $userLocation,
+                    $hospitalName,
                     $bloodNeeded,
                     $unitsNeeded,
                     $urgency,
@@ -149,6 +212,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sos_request'])) {
                 
                 if (!$emergencyStmt->execute()) {
                     throw new Exception("Execute error: " . $emergencyStmt->error);
+                }
+
+                // Notify emergency contacts registered during signup
+                $contactEmails = array_filter([
+                    $userData['emergency_email_1'] ?? '',
+                    $userData['emergency_email_2'] ?? '',
+                    $userData['emergency_email_3'] ?? ''
+                ]);
+                $alertSentCount = 0;
+                $alertFailCount = 0;
+
+                foreach ($contactEmails as $contactEmail) {
+                    if (isValidEmail($contactEmail) && sendEmergencyAlertMail($contactEmail, $userData['full_name'] ?? 'User')) {
+                        $alertSentCount++;
+                    } else {
+                        $alertFailCount++;
+                    }
                 }
                 
                 // Check if blood is available to determine message type
@@ -164,6 +244,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sos_request'])) {
                         $locationInfo = " Available at: " . htmlspecialchars(implode(', ', $nearbyBloodAvailability[$bloodNeeded]['location']));
                     }
                     $message = "✓ Emergency SOS sent! Admins have been notified.$locationInfo";
+                    if ($alertSentCount > 0) {
+                        $message .= " Emergency alert email sent to {$alertSentCount} contact(s).";
+                    }
+                    if ($alertFailCount > 0) {
+                        $message .= " {$alertFailCount} contact email(s) could not be sent.";
+                    }
                     $messageType = "success";
                 } else {
                     // No blood available - show warning but request is recorded
@@ -186,6 +272,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sos_request'])) {
                     } else {
                         $message .= "Please contact the nearest blood bank for alternatives. Admins will follow up.";
                     }
+                    if ($alertSentCount > 0) {
+                        $message .= " Emergency alert email sent to {$alertSentCount} contact(s).";
+                    }
+                    if ($alertFailCount > 0) {
+                        $message .= " {$alertFailCount} contact email(s) could not be sent.";
+                    }
                     $messageType = "warning";
                 }
             }
@@ -201,6 +293,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sos_request'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <?php include("../includes/theme-head.php"); ?>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emergency - Bloodline Home</title>
     <link rel="icon" type="image/png" href="../assets/images/logo.png">
@@ -310,6 +403,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sos_request'])) {
             color: #856404;
             border-color: #ffeaa7;
         }
+        .sos-quick-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 8px;
+            background: #8b0000;
+            color: #fff;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: none;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 22px;
+            margin: 0 auto 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(139, 0, 0, 0.3);
+        }
+        .sos-quick-btn i {
+            font-size: 30px;
+        }
+        .sos-quick-btn:hover {
+            background: #6f0000;
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(139, 0, 0, 0.5);
+        }
+        .sos-quick-btn:active {
+            transform: scale(0.98);
+        }
         .location-info {
             background: #e8f4f8;
             padding: 15px;
@@ -322,6 +446,88 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sos_request'])) {
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
+
+        /* Dark mode — darker panels, readable labels & body text */
+        [data-theme="dark"] .emergency-container > p {
+            color: var(--text-secondary);
+        }
+        [data-theme="dark"] .location-info {
+            background: #1a2838;
+            border-left-color: #5a9fd4;
+            color: var(--body-text);
+        }
+        [data-theme="dark"] .location-info h3 {
+            color: var(--heading-color);
+        }
+        [data-theme="dark"] .location-info p,
+        [data-theme="dark"] .location-info strong {
+            color: var(--body-text);
+        }
+        [data-theme="dark"] .blood-availability {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-soft);
+        }
+        [data-theme="dark"] .blood-availability h2 {
+            color: var(--heading-color) !important;
+        }
+        [data-theme="dark"] .blood-availability > p {
+            color: var(--text-secondary) !important;
+        }
+        [data-theme="dark"] .blood-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+        }
+        [data-theme="dark"] .blood-type {
+            color: var(--body-text);
+        }
+        [data-theme="dark"] .blood-type[style*="color: #007bff"],
+        [data-theme="dark"] .blood-type[style*="color:#007bff"] {
+            color: #7eb8ff !important;
+        }
+        [data-theme="dark"] .blood-location {
+            color: var(--text-secondary);
+        }
+        [data-theme="dark"] .blood-availability h2[style*="color: #007bff"],
+        [data-theme="dark"] .blood-availability h2[style*="color:#007bff"] {
+            color: #7eb8ff !important;
+        }
+        [data-theme="dark"] .form-section {
+            background: var(--bg-card);
+            border-color: var(--border-soft);
+        }
+        [data-theme="dark"] .form-section h2 {
+            color: var(--heading-color);
+        }
+        [data-theme="dark"] .form-group label {
+            color: var(--body-text);
+        }
+        [data-theme="dark"] .form-group input,
+        [data-theme="dark"] .form-group select,
+        [data-theme="dark"] .form-group textarea {
+            background: var(--input-bg);
+            color: var(--input-text);
+            border-color: var(--border-soft);
+        }
+        [data-theme="dark"] .form-group input::placeholder,
+        [data-theme="dark"] .form-group textarea::placeholder {
+            color: var(--text-muted);
+        }
+        [data-theme="dark"] .message-success {
+            background: #1a2e22;
+            color: #8fd99a;
+            border-color: #2d5a3a;
+        }
+        [data-theme="dark"] .message-error {
+            background: #2e1a1a;
+            color: #f5a5a5;
+            border-color: #5a3030;
+        }
+        [data-theme="dark"] .message-warning {
+            background: #2e2618;
+            color: #f0d080;
+            border-color: #5a4a28;
+        }
+
         @media (max-width: 768px) {
             .info-grid {
                 grid-template-columns: 1fr;
@@ -353,6 +559,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sos_request'])) {
                     <?php echo $message; ?>
                 </div>
             <?php endif; ?>
+
+            <form id="sosForm" method="POST" style="display: flex; justify-content: center; margin: 20px 0;">
+                <?php echo csrfField(); ?>
+                <input type="hidden" name="quick_sos" value="1">
+                <button type="button" class="sos-quick-btn" title="Click to send emergency alert to your 3 emergency contacts" onclick="showSosTermsModal(event)">
+                    <i class="ph-thin ph-siren"></i>
+                    SOS
+                </button>
+            </form>
 
             <div class="location-info">
                 <h3 style="margin: 0 0 10px 0;">📍 Your Location</h3>
@@ -452,6 +667,135 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sos_request'])) {
     </div>
 </div>
 
-<script src="../assets/js/dashboard.js"></script>
+<?php include("../includes/dashboard-scripts.php"); ?>
+
+<!-- SOS Terms and Conditions Modal -->
+<div id="sosTermsModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:3000;justify-content:center;align-items:center;flex-direction:column;">
+    <div style="background:white;border-radius:12px;padding:40px;width:90%;max-width:600px;box-shadow:0 10px 40px rgba(0,0,0,0.3);max-height:85vh;overflow-y:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;">
+            <h2 style="margin:0;font-size:24px;font-weight:700;color:#8b0000;">⚠️ SOS Emergency Alert</h2>
+            <button onclick="closeSosTermsModal()" style="background:none;border:none;font-size:28px;cursor:pointer;color:#999;">&times;</button>
+        </div>
+
+        <div style="background:#fff3cd;border:2px solid #ffc107;border-radius:8px;padding:20px;margin-bottom:25px;text-align:center;">
+            <p style="margin:0;font-size:16px;font-weight:700;color:#856404;">READ CAREFULLY BEFORE PROCEEDING</p>
+        </div>
+
+        <div style="background:#f9f9f9;border:1px solid #ddd;border-radius:8px;padding:20px;margin-bottom:25px;line-height:1.8;color:#333;font-size:14px;max-height:300px;overflow-y:auto;">
+            <p style="margin:0 0 15px 0;font-weight:700;color:#8b0000;">TERMS AND CONDITIONS FOR SOS EMERGENCY ALERT</p>
+            
+            <p style="margin:0 0 12px 0;">The SOS button is <strong>strictly intended for genuine medical emergencies only</strong>, such as life-threatening situations requiring immediate blood assistance.</p>
+            
+            <p style="margin:0 0 12px 0;"><strong>By pressing the SOS button, you confirm that:</strong></p>
+            <ul style="margin:0 0 12px 0;padding-left:20px;">
+                <li>The request is <strong>urgent and made in good faith</strong></li>
+                <li>A <strong>genuine medical emergency</strong> exists</li>
+                <li>The information provided is <strong>accurate and truthful</strong></li>
+            </ul>
+
+            <p style="margin:0 0 12px 0;"><strong>Prohibited Activities:</strong></p>
+            <ul style="margin:0 0 12px 0;padding-left:20px;">
+                <li><strong>Misuse</strong> of the SOS feature for non-emergency purposes</li>
+                <li><strong>Testing</strong> or prank calls</li>
+                <li><strong>False or fraudulent</strong> emergency requests</li>
+                <li><strong>Abusing</strong> the system to disrupt services</li>
+            </ul>
+
+            <p style="margin:0 0 12px 0;"><strong>Consequences of Misuse:</strong></p>
+            <ul style="margin:0 0 15px 0;padding-left:20px;">
+                <li>⚠️ Account suspension</li>
+                <li>⚠️ Restriction of system access</li>
+                <li>⚠️ Potential legal action in accordance with applicable laws and regulations</li>
+            </ul>
+
+            <p style="margin:0;font-style:italic;color:#666;">The system administrators reserve the right to verify emergency requests and take appropriate action against any abuse of this feature to ensure the safety and reliability of the service.</p>
+        </div>
+
+        <div style="background:#e8f5e9;border:2px solid #4caf50;border-radius:8px;padding:15px;margin-bottom:25px;">
+            <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;margin:0;font-weight:600;color:#2e7d32;">
+                <input type="checkbox" id="sosAgreementCheckbox" style="width:20px;height:20px;margin-top:2px;cursor:pointer;">
+                <span>✓ I understand and agree to all terms and conditions. I confirm this is a genuine medical emergency and the information is accurate and truthful.</span>
+            </label>
+        </div>
+
+        <div style="display:flex;gap:12px;justify-content:flex-end;">
+            <button onclick="closeSosTermsModal()" style="background:#6c757d;color:white;padding:12px 24px;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:14px;">Cancel</button>
+            <button id="sosAgreeBtn" onclick="submitSosEmergency()" disabled style="background:#cccccc;color:white;padding:12px 24px;border:none;border-radius:6px;cursor:not-allowed;font-weight:700;font-size:14px;transition:all 0.3s;">
+                ✓ Agree and Continue
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function showSosTermsModal(event) {
+    event.preventDefault();
+    document.getElementById('sosTermsModal').style.display = 'flex';
+    document.getElementById('sosAgreementCheckbox').checked = false;
+    updateSosAgreeButton();
+}
+
+function closeSosTermsModal() {
+    document.getElementById('sosTermsModal').style.display = 'none';
+    document.getElementById('sosAgreementCheckbox').checked = false;
+    updateSosAgreeButton();
+}
+
+function updateSosAgreeButton() {
+    const checkbox = document.getElementById('sosAgreementCheckbox');
+    const agreeBtn = document.getElementById('sosAgreeBtn');
+    
+    if (checkbox.checked) {
+        agreeBtn.disabled = false;
+        agreeBtn.style.background = '#8b0000';
+        agreeBtn.style.cursor = 'pointer';
+    } else {
+        agreeBtn.disabled = true;
+        agreeBtn.style.background = '#cccccc';
+        agreeBtn.style.cursor = 'not-allowed';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const checkbox = document.getElementById('sosAgreementCheckbox');
+    if (checkbox) {
+        checkbox.addEventListener('change', updateSosAgreeButton);
+    }
+});
+
+function submitSosEmergency() {
+    if (!document.getElementById('sosAgreementCheckbox').checked) {
+        alert('Please agree to the terms and conditions.');
+        return;
+    }
+
+    // Close the modal
+    closeSosTermsModal();
+    
+    // Submit the SOS form
+    const sosForm = document.getElementById('sosForm');
+    if (sosForm) {
+        sosForm.submit();
+    } else {
+        alert('Error: Could not submit SOS request. Please try again.');
+    }
+}
+
+// Close modal when clicking outside of it
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('sosTermsModal');
+    if (modal && event.target === modal) {
+        closeSosTermsModal();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeSosTermsModal();
+    }
+});
+</script>
+
 </body>
 </html>

@@ -22,6 +22,7 @@ set_exception_handler(function($e) {
 
 require_once("../includes/security.php");
 include("../config/db.php");
+include("../config/env-loader.php");
 include("send-otp-mail.php");
 
 secureSessionStart();
@@ -33,7 +34,7 @@ function redirectWithError($message) {
     exit();
 }
 
-$role = trim($_POST['role'] ?? 'user');
+$role = 'user';
 $full_name = trim($_POST['full_name'] ?? '');
 $email = normalizeEmail($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
@@ -45,10 +46,6 @@ if ($full_name === '' || $email === '' || $password === '' || $confirm_password 
 
 if (!isValidEmail($email)) {
     redirectWithError("Invalid email address.");
-}
-
-if (!in_array($role, ['admin', 'user'], true)) {
-    $role = 'user';
 }
 
 if ($password !== $confirm_password) {
@@ -73,6 +70,55 @@ if ($exists->num_rows > 0) {
     redirectWithError("This email or number is already registered.");
 }
 
+// Handle health card image upload for users
+if ($role === 'user' && isset($_FILES['health_card']) && $_FILES['health_card']['error'] !== UPLOAD_ERR_NO_FILE) {
+    $file = $_FILES['health_card'];
+    
+    // Validate file upload
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        redirectWithError("Error uploading health card image. Please try again.");
+    }
+    
+    // Check file size (max 5MB)
+    $maxFileSize = 5 * 1024 * 1024; // 5MB
+    if ($file['size'] > $maxFileSize) {
+        redirectWithError("Health card image must be less than 5MB.");
+    }
+    
+    // Validate file type
+    $allowedMimes = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/gif' => 'gif',
+        'image/webp' => 'webp'
+    ];
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+    
+    if (!isset($allowedMimes[$mimeType])) {
+        redirectWithError("Health card image must be a valid image file (JPG, PNG, GIF, WebP).");
+    }
+    
+    // Create uploads directory if it doesn't exist
+    $uploadDir = dirname(__DIR__) . '/uploads/profiles/';
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
+    }
+    
+    // Generate unique filename
+    $fileExtension = $allowedMimes[$mimeType];
+    $fileName = 'health_card_' . time() . '_' . bin2hex(random_bytes(8)) . '.' . $fileExtension;
+    $filePath = $uploadDir . $fileName;
+    
+    // Move uploaded file
+    if (!move_uploaded_file($file['tmp_name'], $filePath)) {
+        redirectWithError("Failed to upload health card image. Please try again.");
+    }
+    
+    // Store relative path for database
+    $health_card = 'uploads/profiles/' . $fileName;
+}
 
 $phone = trim($_POST['phone'] ?? '');
 $age = ($_POST['age'] ?? '') !== '' ? (int)$_POST['age'] : null;
@@ -84,6 +130,10 @@ $province = trim($_POST['province'] ?? '');
 $zip_code = trim($_POST['zip_code'] ?? '');
 $blood_group = trim($_POST['blood_group'] ?? '');
 $medical_history = trim($_POST['medical_history'] ?? '');
+$emergency_email_1 = normalizeEmail($_POST['emergency_email_1'] ?? '');
+$emergency_email_2 = normalizeEmail($_POST['emergency_email_2'] ?? '');
+$emergency_email_3 = normalizeEmail($_POST['emergency_email_3'] ?? '');
+$health_card = isset($health_card) ? $health_card : null;
 $eligibility_status = 'eligible';
 
 // Validate phone number: only digits, exactly 10 digits
@@ -106,6 +156,23 @@ if ($role === 'user') {
     if ($age === null || $age < 18) {
         redirectWithError("You must be at least 18 years old to be a donor.");
     }
+    
+    // Weight validation for users (must be at least 45 kg)
+    if ($weight === null || $weight < 45) {
+        redirectWithError("Minimum weight requirement is 45 kg to be eligible as a donor.");
+    }
+
+    // Emergency contact emails: required, valid, and unique
+    $emergencyEmails = [$emergency_email_1, $emergency_email_2, $emergency_email_3];
+    foreach ($emergencyEmails as $emergencyEmail) {
+        if ($emergencyEmail === '' || !isValidEmail($emergencyEmail)) {
+            redirectWithError("Please provide 3 valid emergency contact emails.");
+        }
+    }
+
+    if (count(array_unique($emergencyEmails)) !== 3) {
+        redirectWithError("Emergency contact emails must be different from each other.");
+    }
 }
 
 if ($role === 'admin') {
@@ -119,6 +186,9 @@ if ($role === 'admin') {
     $zip_code = '';
     $blood_group = '';
     $medical_history = '';
+    $emergency_email_1 = '';
+    $emergency_email_2 = '';
+    $emergency_email_3 = '';
 } else {
     // User role fields handled above
 }
@@ -142,13 +212,17 @@ $_SESSION['register_data'] = [
     'zip_code' => $zip_code,
     'blood_group' => $blood_group,
     'medical_history' => $medical_history,
+    'emergency_email_1' => $emergency_email_1,
+    'emergency_email_2' => $emergency_email_2,
+    'emergency_email_3' => $emergency_email_3,
+    'health_card' => $health_card,
     'eligibility_status' => 'eligible'
 ];
 
 // Generate OTP for email verification
 $otp = (string)random_int(100000, 999999);
 $otpHash = hash('sha256', $otp);
-$expires_at = date("Y-m-d H:i:s", strtotime("+1 minute"));
+// Use DB-side expiry to avoid timezone mismatches; set to 20 minutes
 
 // Delete any existing OTP for this email
 $deleteOtp = $conn->prepare("DELETE FROM otp_codes WHERE email = ?");
@@ -156,15 +230,13 @@ $deleteOtp->bind_param("s", $email);
 $deleteOtp->execute();
 
 // Insert new OTP
-$insertOtp = $conn->prepare("INSERT INTO otp_codes (email, otp_code, expires_at) VALUES (?, ?, ?)");
-$insertOtp->bind_param("sss", $email, $otpHash, $expires_at);
+$insertOtp = $conn->prepare("INSERT INTO otp_codes (email, otp_code, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 20 MINUTE))");
+$insertOtp->bind_param("ss", $email, $otpHash);
 
 if (!$insertOtp->execute()) {
     redirectWithError("Failed to generate OTP. Please try again.");
 }
 
-// Store OTP in session for demo display
-$_SESSION['register_otp'] = $otp;
 $_SESSION['register_email'] = $email;
 
 // Send OTP email
